@@ -52,15 +52,17 @@ A concise summary of the workshop's key takeaways and a roadmap for continuing y
 
 ## 💻 Getting Started
 
-To run these notebooks and experiment with quantum circuits yourself, you'll need Python and Qiskit installed.
+To run these notebooks and experiment with quantum circuits yourself, you have two primary options: running locally on your machine or directly in Google Colab.
 
-### Prerequisites
+### Option 1: Running Locally (Recommended for persistent setup)
+
+#### Prerequisites
 
 * **Python 3.8+**
 * **Jupyter Notebook** or **JupyterLab** (often included with Anaconda)
 * **Git** (for cloning the repository)
 
-### Installation
+#### Local Installation
 
 1.  **Clone the repository:**
     ```bash
@@ -73,7 +75,7 @@ To run these notebooks and experiment with quantum circuits yourself, you'll nee
     pip install qiskit qiskit-aer matplotlib numpy
     ```
 
-### Running the Notebooks
+#### Running the Notebooks Locally
 
 1.  **Launch Jupyter:**
     ```bash
@@ -81,6 +83,28 @@ To run these notebooks and experiment with quantum circuits yourself, you'll nee
     ```
 2.  Your web browser will open to the Jupyter interface. Navigate to the `Quantum-IEEE-ComSoc` directory.
 3.  Click on any of the `.ipynb` files (e.g., `section_3_quantum_fourier_transform.ipynb`) to open and run the notebook cells.
+
+### Option 2: Running on Google Colab (Quick start, no local setup required)
+
+Google Colab provides a free, cloud-based Jupyter Notebook environment that requires no setup.
+
+1.  **Open the notebooks directly:**
+    You can open any of the `.ipynb` files directly in Google Colab by changing the domain in the GitHub URL from `github.com` to `colab.research.google.com/github`.
+
+    For example, to open `section_3_quantum_fourier_transform.ipynb`:
+    Just click on this link: [https://colab.research.google.com/github/Abdulmalek-HoM/Quantum-IEEE-ComSoc/blob/main/section_3_quantum_fourier_transform.ipynb](https://colab.research.google.com/github/Abdulmalek-HoM/Quantum-IEEE-ComSoc/blob/main/section_3_quantum_fourier_transform.ipynb)
+
+    You'll find similar links for other notebooks on the repository page.
+
+2.  **Install dependencies in Colab:**
+    Once the notebook opens in Colab, the first code cell (or a new cell at the top) should be used to install the necessary libraries. Run the following command in a code cell:
+    ```python
+    !pip install qiskit qiskit-aer matplotlib numpy
+    ```
+    (Note: Colab environments are temporary, so you'll need to run this installation command each time you open a new Colab session.)
+
+3.  **Run the notebook:**
+    After installation, you can simply run the cells sequentially to execute the quantum circuits and see the results.
 
 ---
 
