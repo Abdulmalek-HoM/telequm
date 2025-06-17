@@ -1,0 +1,48 @@
+{
+  "one_page_document": {
+    "biography": {
+      "title": "Abdulmalek Baitulmal: Empowering the Future of Quantum",
+      "content": "Abdulmalek Baitulmal is a telecom engineer with a dedicated mission to raising awareness about quantum technology. With a background in telecommunications, he contributes to the understanding of emerging quantum advancements and their relevance, particularly within the ICT sector, supported by international experience in teaching and lecturing quantum computing workshops and lectures globally. He is involved in initiatives aimed at fostering understanding and development of quantum ecosystems."
+    },
+    "workshop_details": {
+      "title": "Quantum for Telecom: Understanding the Next Wave",
+      "event": "Communications Society Workshop, IEEE Student Branch, University of Tripoli",
+      "introduction": "This workshop offers an engaging exploration into the transformative world of quantum computing and technologies, specifically tailored for the future of telecommunications networks. Divided into two dynamic sessions, participants will gain both foundational knowledge and practical experience in this cutting-edge field.",
+      "laptop_note": "Attendees are encouraged to bring their laptops for the hands-on session.",
+      "session_1": {
+        "title": "Session 1: Global Quantum Landscape and Telecom Opportunities",
+        "content": "This session introduces quantum technologies, demystifying core concepts and exploring the global quantum ecosystem. We'll cover recent economic developments and the cutting-edge advancements by tech giants like Google, IBM, Microsoft, and Intel, along with their diverse physical modalities for quantum computing. We'll also examine how these advancements, and the involvement of Telco’s such as Ericsson, Ooredoo, Vodafone, Nokia, and others, will reshape future telecom networks, enhancing secure communication, optimizing performance, and enabling complex computations."
+      },
+      "session_2": {
+        "title": "Session 2: Hands-On Quantum Computing with IBM Qiskit",
+        "content": "The second session transitions from theory to practice, offering attendees a unique opportunity to engage directly with quantum computing principles. Using IBM's Qiskit Python framework, participants will get hands-on experience experimenting with quantum phenomena and implementing fundamental quantum circuit characteristics. This practical segment will allow attendees to understand how quantum computers can potentially outperform classical methods when tackling large and complex calculations, fostering a deeper appreciation for the power and potential of quantum computation in real-world scenarios."
+      }
+    }
+  },
+  "jupyter_notebook_section_0": [
+    {
+      "type": "markdown",
+      "content": "# Section 0: Getting Started & Warm-Up\n\n**Objective:** This section ensures we're all ready for hands-on work with Qiskit and provides a quick recap of fundamental concepts.\n\n---\n\n### Key Concepts:\n\n* **Qiskit & IBM Quantum Platform:** A brief introduction to Qiskit as an open-source SDK for working with quantum computers, and how it connects to simulators and real quantum hardware provided by IBM. We'll primarily use a simulator today.\n* **Quantum State Representation:** A quick reminder that unlike classical bits (0 or 1), quantum bits (qubits) can exist as 0, 1, or a **superposition** of both.\n\n---\n\n### Setting up Qiskit in Google Colab:\n\nIf you are running this notebook in Google Colab, you'll need to install Qiskit. Execute the cell below! If you're running locally and already have Qiskit installed, you can skip this."
+    },
+    {
+      "type": "code",
+      "content": "!pip install qiskit\nprint(\"Qiskit installation command executed. Please wait for it to complete if you're in Colab.\")"
+    },
+    {
+      "type": "markdown",
+      "content": "---\n\n### Basic Qiskit Imports:\n\nFirst, let's import the necessary components from Qiskit. We'll need `QuantumCircuit` to build our circuits, `execute` to run them, and `Aer` for our local quantum simulator."
+    },
+    {
+      "type": "code",
+      "content": "# Import necessary Qiskit components\nfrom qiskit import QuantumCircuit, execute, Aer\nfrom qiskit.visualization import plot_histogram # We'll use this for visualizing results\nimport matplotlib.pyplot as plt # For general plotting"
+    },
+    {
+      "type": "markdown",
+      "content": "---\n\n### Warm-Up Circuit: Testing Your Setup\n\nLet's create and run a very simple 1-qubit circuit. We'll put a qubit into a superposition state using a Hadamard gate and then measure it. This confirms your Qiskit environment is working correctly."
+    },
+    {
+      "type": "code",
+      "content": "# Create a Quantum Circuit with 1 qubit and 1 classical bit\nqc_warmup = QuantumCircuit(1, 1)\n\n# Apply a Hadamard gate to put the qubit in superposition\n# A Hadamard gate (H) puts a qubit in an equal superposition of 0 and 1\nqc_warmup.h(0) \n\n# Measure the qubit and store the result in the classical bit\nqc_warmup.measure(0, 0)\n\n# Draw the circuit to see what it looks like\nprint(\"Warm-Up Circuit Diagram:\")\nprint(qc_warmup.draw('text'))\n\n# Select the Aer simulator backend\nsimulator = Aer.get_backend('qasm_simulator')\n\n# Execute the circuit on the simulator\njob = execute(qc_warmup, simulator, shots=1024) # shots = number of times to run the circuit\nresult = job.result()\n\n# Get the measurement counts\ncounts = result.get_counts(qc_warmup)\n\nprint(\"\\nMeasurement Counts (should be roughly 50/50 for 0 and 1):\")\nprint(counts)\n\n# Plot the results\nplot_histogram(counts).set_size_inches(6, 4)\nplt.title(\"Warm-Up Circuit Results\")\nplt.show()\n\nprint(\"\\nIf you see results for both '0' and '1' (roughly 50/50), your setup is working!\")"
+    }
+  ]
+}
