@@ -31,6 +31,7 @@ This notebook is a deep dive into the **Quantum Fourier Transform (QFT)**, a cor
 
 * **Classical FFT vs. Quantum QFT:** Understand the fundamental differences and where QFT provides a distinct advantage, particularly in extracting information from quantum superpositions.
 * **Demonstrating QFT's Power:** See how QFT, unlike classical FFT on simple inputs, can efficiently reveal **hidden periodicities** or "frequencies" embedded within quantum states. This is crucial for advanced signal processing applications.
+* 
 * **Telecom Applications:** Explore how QFT-related algorithms could enhance **blind signal separation**, **channel estimation**, **interference cancellation**, and **radar/Lidar signal processing**.
 
 ### 📐 `section_4_phase_control_interference.ipynb`
