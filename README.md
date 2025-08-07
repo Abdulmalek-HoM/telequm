@@ -1,8 +1,8 @@
-# Quantum-IEEE-ComSoc: Quantum Computing Basics for Telecom Engineers
+# TELEQUM: The home for ICT Engineers in Quantum Tech 
 
 ---
 
-Welcome to the `Quantum-IEEE-ComSoc` repository! This resource stems from an interactive workshop designed to demystify fundamental **quantum computing** concepts and illustrate their profound relevance to the field of **telecommunications**.
+Welcome to the `TELEQUM` repository! This resource stems from an interactive workshop designed to demystify fundamental **quantum computing** concepts and illustrate their profound relevance to the field of **telecommunications**.
 
 As Abdulmalek Baitulmal, a telecom engineer dedicated to raising **quantum technology awareness**, I've created this repository to serve as a practical guide for fellow engineers, students, and enthusiasts looking to explore the exciting intersection of quantum mechanics and communication networks.
 
@@ -21,7 +21,7 @@ Future communication networks, including 6G and beyond, will demand unprecedente
 
 ---
 
-## 📚 Workshop Sections & Notebooks
+## 📚 Examples to Contribute; Workshop Sections & Notebooks
 
 This repository is structured into distinct Jupyter Notebooks, each focusing on a key aspect of quantum computing with direct relevance to telecommunications.
 
@@ -67,8 +67,8 @@ To run these notebooks and experiment with quantum circuits yourself, you have t
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/Abdulmalek-HoM/Quantum-IEEE-ComSoc.git](https://github.com/Abdulmalek-HoM/Quantum-IEEE-ComSoc.git)
-    cd Quantum-IEEE-ComSoc
+    git clone [https://github.com/Abdulmalek-HoM/telequm.git](https://github.com/Abdulmalek-HoM/Quantum-IEEE-ComSoc.git)
+    cd telequm
     ```
 2.  **Install Qiskit and other dependencies:**
     It's recommended to do this within a virtual environment.
@@ -93,7 +93,7 @@ Google Colab provides a free, cloud-based Jupyter Notebook environment that requ
     You can open any of the `.ipynb` files directly in Google Colab by changing the domain in the GitHub URL from `github.com` to `colab.research.google.com/github`.
 
     For example, to open `section_3_quantum_fourier_transform.ipynb`:
-    Just click on this link: [https://colab.research.google.com/github/Abdulmalek-HoM/Quantum-IEEE-ComSoc/blob/main/section_3_quantum_fourier_transform.ipynb](https://colab.research.google.com/github/Abdulmalek-HoM/Quantum-IEEE-ComSoc/blob/main/section_3_quantum_fourier_transform.ipynb)
+    Just click on this link: [https://colab.research.google.com/github/Abdulmalek-HoM/telequm/blob/main/section_3_quantum_fourier_transform.ipynb](https://colab.research.google.com/github/Abdulmalek-HoM/Quantum-IEEE-ComSoc/blob/main/section_3_quantum_fourier_transform.ipynb)
 
     You'll find similar links for other notebooks on the repository page.
 
