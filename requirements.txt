@@ -1,0 +1,41 @@
+# TELEQUM v2.0 - Core Dependencies
+# Install with: pip install -r requirements.txt
+
+# ============================================
+# QUANTUM COMPUTING
+# ============================================
+qiskit>=1.0.0
+qiskit-aer>=0.13.0
+qiskit-optimization>=0.6.0
+qiskit-machine-learning>=0.7.0
+
+# ============================================
+# SCIENTIFIC COMPUTING
+# ============================================
+numpy>=1.24.0
+scipy>=1.10.0
+pandas>=2.0.0
+networkx>=3.0
+
+# ============================================
+# VISUALIZATION
+# ============================================
+matplotlib>=3.7.0
+plotly>=5.18.0
+
+# ============================================
+# DASHBOARD
+# ============================================
+streamlit>=1.30.0
+altair>=5.0.0
+
+# ============================================
+# DEVELOPMENT (uncomment for dev environment)
+# ============================================
+# pytest>=7.4.0
+# pytest-cov>=4.1.0
+# pytest-nbmake>=1.4.0
+# ruff>=0.1.0
+# mypy>=1.7.0
+# pre-commit>=3.5.0
+# black>=23.0.0

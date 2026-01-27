@@ -1,0 +1,207 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Module 1: Operations on Qubits – Physics, Mathematics, and Control",
+    "\n",
+    "## 🚀 Introduction: The Imperative of Error Mitigation",
+    "\n",
+    "In the NISQ (Noisy Intermediate-Scale Quantum) era, quantum computers are powerful but fundamentally flawed. When you run a circuit, the result, $x_{noisy}$, is distorted by physical errors.",
+    "\n",
+    "While the long-term solution is Quantum Error Correction (QEC), the overhead is too great for current hardware. Instead, we use **Quantum Error Mitigation (QEM)**, which is algorithmic post-processing and data-driven techniques to estimate the ideal expectation value ($\hat{x}_i$) from noisy measurement data ($x_n$).",
+    "\n",
+    "**The Challenge:** Build a post-processing function $f_\\theta$ (an AI model) that predicts the ideal result $x_{ideal}$ from noisy data: ",
+    "$$x_{ideal} \\approx f_\\theta(x_{noisy}, \\text{Circuit Features})$$",
+    "\n",
+    "To succeed, your AI model must understand the underlying quantum mechanical processes that generate the noise data."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 🛠️ Prerequisites & Installation",
+    "\n",
+    "Run the following cells to install the necessary modern quantum and AI stacks, including Qiskit 1.x for circuits, Qiskit Dynamics for physics simulation, and PyTorch/Scikit-Learn for the AI model."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Run this in your Jupyter Notebook/Colab to install the modern quantum stack\n",
+    "%pip install qiskit>=1.0 qiskit-ibm-runtime qiskit-dynamics qiskit-aer\n",
+    "# Run this to install the AI/Data Stack\n",
+    "%pip install numpy matplotlib scikit-learn torch"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 1.1 The Physical Realization: Superconducting Transmons",
+    "\n",
+    "To effectively mitigate errors, one must first understand the physical origin of quantum operations. A qubit is not a digital bit; it is an analog microwave resonator. The primary platform for the competition's data is the **superconducting transmon qubit**.",
+    "\n",
+    "### From Harmonic to Anharmonic Oscillators",
+    "A standard LC circuit behaves as a Quantum Harmonic Oscillator with equally spaced energy levels.",
+    "$$\\hat{H}_{LC} = \\hbar \\omega_r \\left( \\hat{a}^\\dagger \\hat{a} + \\frac{1}{2} \\right)$$",
+    "\n",
+    "This equal spacing is a problem: a control pulse intended to drive the $|0\\rangle \\to |1\\rangle$ transition would *also* drive the $|1\\rangle \\to |2\\rangle$ transition, preventing us from isolating the computational subspace $\{|0\\rangle, |1\\rangle\}$.",
+    "\n",
+    "The solution is the **Josephson Junction (JJ)**, which acts as a non-linear inductor, introducing an **anharmonicity ($\\alpha$)**.",
+    "\n",
+    "The transmon Hamiltonian is approximately:",
+    "$$\\hat{H} \\approx 4E_C (\\hat{n} - n_g)^2 - E_J \\cos(\\hat{\\phi})$$",
+    "\n",
+    "This non-linearity makes the energy levels unequal, allowing us to uniquely address the $|0\\rangle \\to |1\\rangle$ transition ($\omega_{01}$) without exciting the $|1\\rangle \\to |2\\rangle$ transition ($\omega_{12}$), provided $\omega_{12} \\approx \\omega_{01} + \\alpha$ where $\\alpha$ is typically $-300$ to $-350$ MHz.",
+    "\n",
+    "",
+    "\n",
+    "### Leakage Errors",
+    "Despite the anharmonicity, errors occur. If a control pulse is too short in time, its spectral width in frequency becomes broad (due to the Fourier limit). If this spectral width overlaps with $\\omega_{12}$, the qubit can transition to the non-computational $|2\\rangle$ state. This is known as **leakage**.",
+    "\n",
+    "**Insight for AI:** Leakage is a non-Clifford, non-unital error that violates the two-level assumption of many standard QEM techniques like Zero-Noise Extrapolation (ZNE). If the dataset includes higher-energy occupation probabilities, a leakage-aware model may be required."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 1.2 The Mathematical Ideal: The Bloch Sphere",
+    "\n",
+    "Mathematically, a single qubit state is a vector in a two-dimensional complex Hilbert space $\\mathbb{C}^2$:",
+    "$$|\\psi\\rangle = \\alpha |0\\rangle + \\beta |1\\rangle \\quad \\text{where } |\\alpha|^2 + |\\beta|^2 = 1$$",
+    "\n",
+    "This state can be visualized as a point on the surface of the **Bloch Sphere**.",
+    "\n",
+    "",
+    "\n",
+    "### Single Qubit Gates as Rotations",
+    "Operations are unitary transformations that correspond to rotations on the Bloch sphere:",
+    "\n",
+    "* **Pauli-X ($X$):** $180^\\circ$ rotation around the X-axis. Swaps $|0\\rangle \\leftrightarrow |1\\rangle$.",
+    "    $$X = \\begin{pmatrix} 0 & 1 \\\\ 1 & 0 \\end{pmatrix}$$",
+    "* **Pauli-Z ($Z$):** $180^\\circ$ rotation around the Z-axis. Adds a relative phase $\\pi$.",
+    "    $$Z = \\begin{pmatrix} 1 & 0 \\\\ 0 & -1 \\end{pmatrix}$$",
+    "* **Hadamard ($H$):** Creates superposition. Maps $|0\\rangle \\to \\frac{|0\\rangle+|1\\rangle}{\\sqrt{2}}$.",
+    "    $$H = \\frac{1}{\\sqrt{2}} \\begin{pmatrix} 1 & 1 \\\\ 1 & -1 \\end{pmatrix}$$",
+    "\n",
+    "### The Crucial Insight: Virtual Z-Gates",
+    "The physical implementation of gates is never perfect, leading to coherent errors (e.g., over-rotation). However, **Z-gates** are an exception:",
+    "\n",
+    "* **Physical X/Y Gates** are implemented by sending a microwave pulse.",
+    "* **Virtual Z Gates** are implemented in **software** by changing the phase of the *next* microwave pulse.",
+    "\n",
+    "**This means Z gates are perfect (zero error)**. This is a crucial feature for your AI model to leverage: you can treat the $Z$ operations in your circuit as noise-free."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## 1.3 Pulse-Level Implementation and Control",
+    "\n",
+    "A quantum gate is not an instantaneous matrix multiplication; it is a precisely timed physical drive, often lasting nanoseconds.",
+    "\n",
+    "### Rabi Oscillations",
+    "To implement an $X$-gate ($180^\\circ$ rotation), a microwave drive field is applied. Think of this as pushing a child on a swing at the resonant frequency. Continuous pushing causes the state to oscillate between $|0\\rangle$ and $|1\\rangle$ (Rabi oscillation).",
+    "\n",
+    "",
+    "\n",
+    "The gate is completed by stopping the pulse at the exact time $t_{gate}$ needed to achieve the target state. The rotation angle $\\theta$ is determined by the integral of the Rabi frequency $\\Omega(t)$ over the pulse duration:",
+    "\n",
+    "$$\\int_0^{t_{gate}} \\Omega(t) dt = \\theta$$",
+    "\n",
+    "If the integral is slightly off (e.g., $1.01\\pi$ instead of $\\pi$), the gate results in an **over-rotation error**, which is a type of **coherent error**."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Implementation: Simulating Physics with Qiskit Dynamics",
+    "We can use `Qiskit Dynamics` to simulate the Schrödinger equation and visualize how a microwave pulse drives a qubit, moving beyond the abstract circuit model to the physical control layer."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "from qiskit_dynamics import Solver, RotatingFrame, Signal, QubitSystem\n",
+    "from qiskit.quantum_info import Operator\n",
+    "\n",
+    "# 1. Define the System (Transmon Qubit)\n",
+    "# Frequencies are in rad/s, time in ns\n",
+    "qubit_freq = 5.0 * 2 * np.pi  # 5 GHz\n",
+    "\n",
+    "# 2. Define the Drive Hamiltonian (rotating frame at qubit_freq)\n",
+    "X = Operator.from_label('X').data\n",
+    "Y = Operator.from_label('Y').data\n",
+    "drive_op = X / 2 + 1j * Y / 2  # The drive component (sigma+)\n",
+    "\n",
+    "# System definition (no decoherence for simplicity)\n",
+    "qubit_system = QubitSystem(qubit_freq=qubit_freq)\n",
+    "solver = Solver(static_hamiltonian=qubit_system.static_hamiltonian,\n",
+    "                hamiltonian_operators=[X],\n",
+    "                rotating_frame=RotatingFrame(qubit_system.static_hamiltonian))\n",
+    "\n",
+    "# 3. Define the Pulse (Simple rectangular pulse for demonstration)\n",
+    "drive_amplitude = 0.5 * np.pi  # Rabi frequency (amplitude)\n",
+    "gate_duration = 1.0          # Time to complete a pi-rotation, e.g., 1 ns\n",
+    "times = np.linspace(0, gate_duration, 101)\n",
+    "\n",
+    "def square_pulse(t, amp, duration):\n",
+    "    return amp * (t >= 0) * (t <= duration)\n",
+    "\n",
+    "drive_signal = Signal(square_pulse, drive_amplitude, gate_duration)\n",
+    "\n",
+    "# 4. Solve the Dynamics (Schrödinger equation)\n",
+    "initial_state = np.array([1.0, 0.0])  # Start in |0>\n",
+    "result = solver.solve(t_span=times, initial_state=initial_state, signals=[drive_signal])\n",
+    "\n",
+    "# 5. Visualize the Population Dynamics\n",
+    "populations = np.abs(result.y)**2\n",
+    "plt.figure(figsize=(10, 6))\n",
+    "plt.plot(times, populations[:, 0], label='|0> Population')\n",
+    "plt.plot(times, populations[:, 1], label='|1> Population')\n",
+    "plt.xlabel('Time (ns)')\n",
+    "plt.ylabel('Population Probability')\n",
+    "plt.title('Rabi Oscillation Simulation (Ideal X-Gate)')\n",
+    "plt.legend()\n",
+    "plt.grid(True)\n",
+    "plt.show()\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3.12",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.12"
+  },
+  "orig_nbformat": 4
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

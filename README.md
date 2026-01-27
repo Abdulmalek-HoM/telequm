@@ -1,84 +1,180 @@
-# TELEQUM: An Applied Quantum Testbed for Telecommunications 🔬📡
+# TELEQUM v2.0
 
-Welcome to **TELEQUM**! This open-source initiative is dedicated to bridging the critical gap between quantum research and practical telecom engineering. Our goal is to create the #1 open-source platform that brings applied quantum computing to the telecommunications industry, fostering a community of skilled engineers and developers equipped to build the quantum-powered networks of the future.
+<div align="center">
 
-We are striving to evolve this repository into a foundational **applied quantum testbed for the telecom industry by 2028**.
+**The Applied Quantum Testbed for Telecommunications**
+
+*Bridging Telecom Legacy Systems and Quantum Futures*
+
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Qiskit](https://img.shields.io/badge/Qiskit-1.0+-purple.svg)](https://qiskit.org/)
+
+[Documentation](#documentation) • [Quick Start](#quick-start) • [Industrial Use Cases](#industrial-use-cases) • [Dashboard](#interactive-dashboard) • [Contributing](#contributing)
+
+</div>
 
 ---
 
-## 🎯 Core Objectives
+## 🎯 What is TELEQUM?
 
-The TELEQUM project is designed as a multi-purpose tool to serve the entire quantum-telecom ecosystem.
+TELEQUM is the **industry's first open-source platform** that brings production-ready quantum computing to telecommunications. We provide:
 
-* 🎓 **Educate & Train:** Serve as a primary curriculum for final-year telecom engineering students and professionals seeking to upskill in quantum technologies.
-* 💼 **Demonstrate & Pitch:** Provide a toolkit of executable notebooks to showcase the potential of quantum solutions to clients, managers, and stakeholders.
-* 💡 **Develop & Innovate:** Act as a foundational codebase and testbed for rapidly prototyping new quantum-telecom applications.
-* 🤝 **Build Community:** Bring more specialists, developers, and industry experts into the quantum-telecom conversation to accelerate innovation through collaboration.
+- 🔬 **Research-Grade Algorithms**: QAOA, VQE, and QML implementations optimized for telecom
+- 🏭 **Industrial Simulators**: Resource allocation, beamforming, and network optimization
+- 📚 **Zero-to-Hero Education**: Structured curriculum for ICT engineers
+- 🖥️ **Interactive Dashboard**: Streamlit-powered demos and visualizations
+
+**Target Users**: VP of Engineering, Network Architects, ICT Engineers, Telecom Operators
+
+---
+
+## 💼 Industrial Use Cases
+
+### 6G Network Optimization
+```python
+from telequm.algorithms import NetworkQAOA
+from telequm.core.hamiltonians import create_max_cut_hamiltonian
+
+# Create network graph and optimize
+H = create_max_cut_hamiltonian(network_graph)
+qaoa = NetworkQAOA(num_qubits=10, p=2, hamiltonian=H)
+result = qaoa.optimize()
+```
+
+### Resource Allocation
+```python
+from telequm.telecom import ResourceAllocator
+
+allocator = ResourceAllocator(num_resources=8, num_users=20)
+result = allocator.allocate(demand_matrix, method="quantum")
+```
+
+### Quantum-Enhanced Beamforming
+```python
+from telequm.telecom import BeamformingOptimizer
+
+optimizer = BeamformingOptimizer(num_antennas=4, num_users=2)
+weights = optimizer.compute_weights(channel_matrix)
+sinr = optimizer.compute_sinr(weights, channel_matrix)
+```
+
+---
+
+## 🚀 Quick Start
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/Abdulmalek-HoM/telequm.git
+cd telequm
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Install TELEQUM package
+pip install -e .
+```
+
+### Run the Dashboard
+
+```bash
+streamlit run dashboard/app.py
+```
+
+### Explore Notebooks
+
+```bash
+jupyter notebook notebooks/
+```
 
 ---
 
 ## 📁 Repository Structure
 
-The project is organized into a modular folder structure, allowing for easy navigation to specific areas of interest:
-
-* **/Quantum_Cryptography_QKD/**: Notebooks and resources related to Quantum Key Distribution.
-* **/Post_Quantum_Cryptography_PQC/**: Demonstrations of quantum threats and explorations of PQC algorithms.
-* **/Quantum_Internet/**: Implementations of protocols and concepts for quantum networks.
-* **/Quantum_for_6G_and_Beyond/**: Applications of quantum computing for next-generation network optimization.
-* **/Quantum_Sensing_and_Metrology/**: Use cases for quantum sensing in communication infrastructure.
-
----
-
-## 🗺️ Project Roadmap & Content Plan
-
-The initial development phase focuses on creating a cornerstone notebook for each of the core sections. This plan provides a clear path forward for the project's foundational content.
-
-| Folder / Section                      | Notebook Title                                       | Telecom Problem Solved                                                                          | Implementation Summary                                                                                                                                                                                                                                                                                                                          |
-| ------------------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Quantum Cryptography (QKD)** | `01_Security_Simulating_the_BB84_Protocol.ipynb`     | How to establish a provably secure key over an insecure channel, with eavesdropper detection.   | • Alice encodes qubits using random bits and bases.<br>• Simulate an eavesdropper (Eve) intercepting qubits.<br>• Bob measures qubits using his own random bases.<br>• Alice and Bob publicly compare bases and check for errors to establish a secure key.                                                                                        |
-| **Post-Quantum Cryptography (PQC)** | `02_Security_The_Threat_of_Shor_Algorithm.ipynb`     | Demonstrating the vulnerability of current RSA encryption to a quantum computer.                | • Frame the problem by showing RSA's reliance on factoring (e.g., N=15).<br>• Utilize Qiskit's high-level Shor algorithm function.<br>• Execute on a simulator to find prime factors (3 and 5).<br>• Explain how this process, when scaled, breaks modern encryption.                                                                            |
-| **Quantum Internet** | `03_Networks_Quantum_Teleportation_Protocol.ipynb`   | How to transmit a quantum state between two network nodes, a fundamental quantum internet capability. | • Create a quantum state (message) and a shared entangled Bell pair between Alice and Bob.<br>• Alice interacts her message with her half of the entangled pair.<br>• Alice sends two classical bits of measurement results to Bob.<br>• Bob applies specific gates based on Alice's message to reconstruct the state.                            |
-| **Quantum for 6G and Beyond** | **`04_1_6G_Network_Optimization_with_QAOA.ipynb`<br>`04_2_Advanced_Resource_Allocation_with_VQE.ipynb`<br>`04_3_6G_Intelligent_Beamforming_with_QML.ipynb`** | **Solving complex optimization problems for 6G, including resource allocation and intelligent beamforming.** | **• QAOA: Model network as a graph, convert to a Hamiltonian, and find optimal configuration.<br>• VQE: Tackle more complex resource allocation problems using the Variational Quantum Eigensolver.<br>• QML: Utilize Quantum Machine Learning for adaptive beamforming in dynamic network environments.** |
-| **Quantum Sensing and Metrology** | `05_Sensing_Quantum_Phase_Estimation.ipynb`          | How to perform ultra-precise frequency/time measurements for next-gen network synchronization.  | • Define a Unitary operator U with a specific phase.<br>• Prepare "counting" qubits in superposition.<br>• Apply a series of controlled-U operations.<br>• Apply the inverse Quantum Fourier Transform (QFT).<br>• Measure the counting qubits to read out a precise estimate of the phase.                                                          |
+```
+telequm/
+├── telequm/                    # Core Python package
+│   ├── core/                   # Reusable circuits & utilities
+│   ├── algorithms/             # QAOA, VQE, QML implementations
+│   └── telecom/                # Industry-specific modules
+├── notebooks/                  # Educational curriculum
+│   ├── 01_foundations/         # Zero-to-Hero basics
+│   ├── 04_6g_optimization/     # 6G use cases
+│   └── 06_moonshot/            # Advanced research
+├── dashboard/                  # Interactive Streamlit app
+├── v1_legacy/                  # Original workshop content
+├── tests/                      # Unit tests
+└── docs/                       # Documentation
+```
 
 ---
 
-## 🚀 Getting Started
+## 📊 Interactive Dashboard
 
-To get started with the notebooks in this repository:
+The TELEQUM Dashboard provides four key modules:
 
-1.  **Clone the repository:**
-    ```bash
-    git clone [https://github.com/Abdulmalek-HoM/telequm.git](https://github.com/Abdulmalek-HoM/telequm.git)
-    cd telequm
-    ```
-2.  **Set up the environment:**
-    It is recommended to create a virtual environment to manage dependencies.
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
-    ```
-3.  **Install dependencies:**
-    *(Note: A `requirements.txt` file should be added to the repo for easy installation)*
-    ```bash
-    pip install qiskit numpy matplotlib networkx qiskit_optimization
-    ```
-4.  **Launch Jupyter Notebook:**
-    ```bash
-    jupyter notebook
-    ```
-    Now you can navigate to the folders and run the `.ipynb` files.
+| Module | Description |
+|--------|-------------|
+| 📚 **Education Hub** | Zero-to-Hero curriculum for ICT engineers |
+| 🔬 **Use-Case Lab** | Industrial simulators with live quantum execution |
+| 🔧 **Hardware Hub** | Vendor comparison (IBM, IonQ, Quantinuum) |
+| 🚀 **Moonshot** | Deep investigations in propulsion optimization |
 
 ---
 
-## 🙌 How to Contribute
+## 📖 Documentation
 
-Contributions are welcome and essential for making TELEQUM the definitive resource for the community! You can contribute by:
+- [Architecture Overview](docs/ARCHITECTURE.md)
+- [Getting Started Guide](docs/GETTING_STARTED.md)
+- [API Reference](docs/api/)
+- [Contributing Guide](CONTRIBUTING.md)
 
-* ⭐ Starring the project to show your support.
-* 🐛 Reporting bugs or issues.
-* 💡 Suggesting new features or notebook ideas.
-* 📝 Improving documentation and explanations.
-* 📥 Submitting a pull request with new notebooks, examples, or code improvements.
+---
 
-Let's build the future of telecommunications, together.
+## 🛠️ Technology Stack
+
+| Component | Technology |
+|-----------|------------|
+| Quantum SDK | Qiskit 1.0+ |
+| Optimization | qiskit-optimization, scipy |
+| ML | qiskit-machine-learning |
+| Dashboard | Streamlit, Plotly |
+| Testing | pytest, pytest-cov |
+
+---
+
+## 👤 Author
+
+**Abdulmalek Baitulmal**  
+*Quantum Strategy Lead (MENA Region)*
+
+- [LinkedIn](https://www.linkedin.com/in/abdulmalek-baitulmal-543753140/)
+- Key achievements: VQE/QAOA optimization for 6G, QEM-Former (Graph Transformer for Error Mitigation), IET-published framework for national quantum adoption
+
+---
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+---
+
+<div align="center">
+
+**TELEQUM**: *The Go-To Quantum-Telecom Hub*
+
+Building the quantum-powered networks of tomorrow.
+
+</div>

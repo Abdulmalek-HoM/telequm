@@ -1,0 +1,124 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "telequm"
+version = "2.0.0"
+description = "The Applied Quantum Testbed for Telecommunications - Bridging Telecom Legacy and Quantum Futures"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Abdulmalek Baitulmal", email = "abdulmalek@telequm.dev"}
+]
+keywords = [
+    "quantum computing",
+    "telecommunications",
+    "6G",
+    "QAOA",
+    "VQE",
+    "quantum machine learning",
+    "network optimization",
+    "post-quantum cryptography"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Telecommunications Industry",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: System :: Networking",
+]
+
+dependencies = [
+    "qiskit>=1.0.0",
+    "qiskit-aer>=0.13.0",
+    "qiskit-optimization>=0.6.0",
+    "qiskit-machine-learning>=0.7.0",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "matplotlib>=3.7.0",
+    "networkx>=3.0",
+    "pandas>=2.0.0",
+]
+
+[project.optional-dependencies]
+dashboard = [
+    "streamlit>=1.30.0",
+    "plotly>=5.18.0",
+    "altair>=5.0.0",
+]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-nbmake>=1.4.0",
+    "ruff>=0.1.0",
+    "mypy>=1.7.0",
+    "pre-commit>=3.5.0",
+    "black>=23.0.0",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.4.0",
+    "mkdocstrings[python]>=0.24.0",
+]
+all = ["telequm[dashboard,dev,docs]"]
+
+[project.urls]
+Homepage = "https://github.com/Abdulmalek-HoM/telequm"
+Documentation = "https://telequm.readthedocs.io"
+Repository = "https://github.com/Abdulmalek-HoM/telequm"
+Issues = "https://github.com/Abdulmalek-HoM/telequm/issues"
+
+[project.scripts]
+telequm-dashboard = "dashboard.app:main"
+
+[tool.setuptools.packages.find]
+include = ["telequm*"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+]
+
+[tool.ruff.isort]
+known-first-party = ["telequm"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --cov=telequm --cov-report=term-missing"
+
+[tool.coverage.run]
+source = ["telequm"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+]
