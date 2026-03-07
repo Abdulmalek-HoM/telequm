@@ -13,16 +13,19 @@ algorithms
     QAOA, VQE, and Quantum Machine Learning implementations
 telecom
     Industry-specific modules for resource allocation, beamforming, and optimization
+simulator
+    Discrete time-step simulation engine with 3GPP models, traffic, mobility,
+    optimization bridge, and classical/quantum solver integration
 
 Example
 -------
+>>> from telequm.simulator import SimulationEngine, NetworkEnvironment
 >>> from telequm.algorithms import qaoa
->>> from telequm.telecom import network_optimization
->>> optimizer = qaoa.NetworkQAOA(num_nodes=5)
->>> result = optimizer.optimize()
+>>> engine = SimulationEngine(config)
+>>> results = engine.run()
 """
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 __author__ = "Abdulmalek Baitulmal"
 __email__ = "abdulmalek@telequm.dev"
 
@@ -43,6 +46,8 @@ __all__ = [
     "resource_allocation",
     "beamforming",
     "network_optimization",
+    # Simulator module (lazy import — heavy deps)
+    "simulator",
     # Version info
     "__version__",
     "__author__",

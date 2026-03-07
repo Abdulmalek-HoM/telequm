@@ -1,0 +1,122 @@
+# ─────────────────────────────────────────────────────────────
+#  TELEQUM v2.1 — Experiment Configuration Template
+# ─────────────────────────────────────────────────────────────
+experiment:
+  name: "resource_allocation_urban_macro"
+  description: "Resource allocation benchmark: 4 BS, 20 UEs, urban macro"
+  author: "Abdulmalek Baitulmal"
+  version: "2.1"
+  tags: ["resource-allocation", "urban-macro", "qaoa-vs-greedy"]
+
+# ── Network topology ──────────────────────────────────────────
+network:
+  area_size: [1000.0, 1000.0]     # metres
+  random_seed: 42
+  base_stations:
+    - id: 0
+      position: [250, 250]
+      tx_power_dbm: 46.0
+      frequency_ghz: 3.5
+      num_antennas: 64
+      bandwidth_mhz: 100.0
+      num_prbs: 273
+      height_m: 25.0
+    - id: 1
+      position: [750, 250]
+      tx_power_dbm: 46.0
+      frequency_ghz: 3.5
+      num_antennas: 64
+      bandwidth_mhz: 100.0
+      num_prbs: 273
+      height_m: 25.0
+    - id: 2
+      position: [250, 750]
+      tx_power_dbm: 46.0
+      frequency_ghz: 3.5
+      num_antennas: 64
+      bandwidth_mhz: 100.0
+      num_prbs: 273
+      height_m: 25.0
+    - id: 3
+      position: [750, 750]
+      tx_power_dbm: 46.0
+      frequency_ghz: 3.5
+      num_antennas: 64
+      bandwidth_mhz: 100.0
+      num_prbs: 273
+      height_m: 25.0
+  users:
+    - id: 0
+      position: [100, 100]
+      traffic_demand_mbps: 10.0
+    - id: 1
+      position: [200, 300]
+      traffic_demand_mbps: 15.0
+    - id: 2
+      position: [400, 150]
+      traffic_demand_mbps: 5.0
+    - id: 3
+      position: [600, 400]
+      traffic_demand_mbps: 20.0
+    - id: 4
+      position: [800, 200]
+      traffic_demand_mbps: 10.0
+    - id: 5
+      position: [150, 600]
+      traffic_demand_mbps: 8.0
+    - id: 6
+      position: [350, 800]
+      traffic_demand_mbps: 25.0
+    - id: 7
+      position: [500, 500]
+      traffic_demand_mbps: 12.0
+    - id: 8
+      position: [700, 700]
+      traffic_demand_mbps: 10.0
+    - id: 9
+      position: [900, 900]
+      traffic_demand_mbps: 18.0
+  slices:
+    - id: 0
+      name: "eMBB"
+      priority: 1
+      min_rate_mbps: 10.0
+      max_latency_ms: 10.0
+    - id: 1
+      name: "URLLC"
+      priority: 3
+      min_rate_mbps: 1.0
+      max_latency_ms: 1.0
+    - id: 2
+      name: "mMTC"
+      priority: 2
+      min_rate_mbps: 0.01
+      max_latency_ms: 100.0
+
+# ── Simulation parameters ────────────────────────────────────
+simulation:
+  num_timesteps: 50
+  dt: 1.0                          # seconds per step
+  random_seed: 42
+  channel_update_interval: 5
+  optimization_interval: 10
+
+# ── Traffic model ────────────────────────────────────────────
+traffic:
+  model: "poisson"
+  arrival_rate: 1.0
+  session_rate_mbps: 5.0
+
+# ── Mobility model ───────────────────────────────────────────
+mobility:
+  model: "pedestrian"
+  speed_mean: 1.2
+
+# ── Solver configuration ────────────────────────────────────
+solver:
+  classical_method: "greedy"        # greedy | simulated_annealing | exact
+  run_quantum: false                # set true for quantum comparison
+  quantum_algorithm: "qaoa"         # qaoa | vqe
+  max_quantum_vars: 16              # skip quantum if n > this
+  shots: 1024
+  p: 2                              # QAOA layers

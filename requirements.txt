@@ -1,4 +1,4 @@
-# TELEQUM v2.0 - Core Dependencies
+# TELEQUM v2.1 - Core Dependencies
 # Install with: pip install -r requirements.txt
 
 # ============================================
@@ -30,12 +30,19 @@ streamlit>=1.30.0
 altair>=5.0.0
 
 # ============================================
-# DEVELOPMENT (uncomment for dev environment)
+# SIMULATOR (v2.1)
 # ============================================
-# pytest>=7.4.0
-# pytest-cov>=4.1.0
-# pytest-nbmake>=1.4.0
-# ruff>=0.1.0
-# mypy>=1.7.0
-# pre-commit>=3.5.0
-# black>=23.0.0
+pyyaml>=6.0            # experiment config loading
+tqdm>=4.65.0           # progress bars
+
+# ============================================
+# DEVELOPMENT
+# ============================================
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-nbmake>=1.4.0
+ruff>=0.1.0
+mypy>=1.7.0
+pre-commit>=3.5.0
+black>=23.0.0
+
