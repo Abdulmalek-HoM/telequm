@@ -180,6 +180,12 @@ def _build_problem(problem_type: str, snap: UniversalNetworkSnapshot):
         PRBAllocationProblem, RoutingOptimization,
         BeamSelection, EnergyEfficiency, HandoverOptimization,
     )
+    # These two are newer — import with fallback for stale cache
+    try:
+        from telequm.problems import BSPlacementProblem, QuantumNetworkRouting
+    except ImportError:
+        from telequm.problems.telecom_problems import BSPlacementProblem, QuantumNetworkRouting
+
     if problem_type == "prb_allocation":
         return PRBAllocationProblem(snap)
     elif problem_type == "routing":
@@ -190,6 +196,10 @@ def _build_problem(problem_type: str, snap: UniversalNetworkSnapshot):
         return EnergyEfficiency(snap)
     elif problem_type == "handover":
         return HandoverOptimization(snap)
+    elif problem_type == "bs_placement":
+        return BSPlacementProblem(snap)
+    elif problem_type == "quantum_routing":
+        return QuantumNetworkRouting(snap)
     else:
         return PRBAllocationProblem(snap)
 
@@ -207,6 +217,10 @@ def _get_num_vars(problem_type: str, snap: UniversalNetworkSnapshot) -> int:
         return n_cell + n_ue * n_cell
     elif problem_type == "handover":
         return n_ue * n_cell
+    elif problem_type == "bs_placement":
+        return n_cell
+    elif problem_type == "quantum_routing":
+        return n_cell * n_cell
     return n_ue * n_cell
 
 

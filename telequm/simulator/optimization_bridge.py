@@ -349,11 +349,22 @@ class OptimizationBridge:
         
         Returns
         -------
-        dict with same structure as ``solve_classical``
+        dict with solution, decoded, cost, runtime, AND circuit info:
+            circuit_text, optimal_params, optimization_history,
+            measurement_counts, circuit_depth, gate_count, num_qubits,
+            convergence_info
         """
         Q, offset, meta = self.problem.build_qubo(snapshot)
         n = Q.shape[0]
         t0 = time.time()
+
+        circuit_text = ""
+        optimal_params = None
+        optimization_history = []
+        measurement_counts = {}
+        circuit_depth = 0
+        gate_count = 0
+        convergence_info = {}
 
         if algorithm == "qaoa":
             from telequm.algorithms.qaoa import NetworkQAOA
@@ -361,19 +372,71 @@ class OptimizationBridge:
 
             # Convert QUBO to Ising Hamiltonian
             hamiltonian = self._qubo_to_ising(Q, offset)
-            qaoa = NetworkQAOA(num_qubits=n, p=kwargs.get("p", 2), hamiltonian=hamiltonian)
+            p_layers = kwargs.get("p", 2)
+            qaoa = NetworkQAOA(num_qubits=n, p=p_layers, hamiltonian=hamiltonian)
             result = qaoa.optimize(shots=shots, maxiter=kwargs.get("maxiter", 100))
             bitstring = result["optimal_bitstring"]
             x = np.array([int(b) for b in reversed(bitstring)], dtype=int)
             cost = self.problem.evaluate_cost(x, Q, offset)
+
+            # ── Extract circuit info ──
+            optimal_params = result.get("optimal_params")
+            if optimal_params is not None:
+                optimal_params = list(optimal_params)
+            optimization_history = result.get("history", [])
+            measurement_counts = result.get("counts", {})
+
+            # Build final circuit for visualization
+            try:
+                gamma = optimal_params[:p_layers] if optimal_params else [0.5] * p_layers
+                beta = optimal_params[p_layers:] if optimal_params else [0.5] * p_layers
+                final_qc = qaoa.create_circuit(gamma=list(gamma), beta=list(beta))
+                circuit_text = str(final_qc.draw("text"))
+                circuit_depth = final_qc.depth()
+                gate_count = sum(dict(final_qc.count_ops()).values())
+            except Exception:
+                circuit_text = f"QAOA circuit: {n} qubits, p={p_layers}"
+                circuit_depth = p_layers * 2
+                gate_count = n * p_layers * 3  # rough estimate
+
+            # Convergence info from scipy
+            scipy_res = result.get("scipy_result")
+            if scipy_res is not None:
+                convergence_info = {
+                    "nfev": getattr(scipy_res, "nfev", None),
+                    "success": getattr(scipy_res, "success", None),
+                    "message": str(getattr(scipy_res, "message", "")),
+                    "final_cost": float(getattr(scipy_res, "fun", 0)),
+                }
+
         elif algorithm == "vqe":
             from telequm.algorithms.vqe import ResourceVQE
             hamiltonian = self._qubo_to_ising(Q, offset)
-            vqe = ResourceVQE(num_qubits=n, hamiltonian=hamiltonian, num_layers=kwargs.get("num_layers", 2))
+            num_layers = kwargs.get("num_layers", 2)
+            vqe = ResourceVQE(num_qubits=n, hamiltonian=hamiltonian, num_layers=num_layers)
             result = vqe.optimize(shots=shots, maxiter=kwargs.get("maxiter", 200))
             bitstring = result["optimal_bitstring"]
             x = np.array([int(b) for b in reversed(bitstring)], dtype=int)
             cost = self.problem.evaluate_cost(x, Q, offset)
+
+            optimal_params = result.get("optimal_params")
+            if optimal_params is not None:
+                optimal_params = list(optimal_params)
+            optimization_history = result.get("history", [])
+            measurement_counts = result.get("counts", {})
+
+            circuit_text = f"VQE ansatz: {n} qubits, {num_layers} layers"
+            circuit_depth = num_layers * n
+            gate_count = num_layers * n * 3
+
+            scipy_res = result.get("scipy_result")
+            if scipy_res is not None:
+                convergence_info = {
+                    "nfev": getattr(scipy_res, "nfev", None),
+                    "success": getattr(scipy_res, "success", None),
+                    "message": str(getattr(scipy_res, "message", "")),
+                    "final_cost": float(getattr(scipy_res, "fun", 0)),
+                }
         else:
             raise ValueError(f"Unknown quantum algorithm: {algorithm}")
 
@@ -387,7 +450,17 @@ class OptimizationBridge:
             "method": f"quantum_{algorithm}",
             "num_vars": n,
             "shots": shots,
+            # ── Circuit & optimization info ──
+            "circuit_text": circuit_text,
+            "optimal_params": optimal_params,
+            "optimization_history": optimization_history,
+            "measurement_counts": measurement_counts,
+            "circuit_depth": circuit_depth,
+            "gate_count": gate_count,
+            "num_qubits": n,
+            "convergence_info": convergence_info,
         }
+
 
     @staticmethod
     def _qubo_to_ising(Q: np.ndarray, offset: float):

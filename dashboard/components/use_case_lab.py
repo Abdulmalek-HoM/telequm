@@ -26,6 +26,10 @@ from dashboard.utils.plot_helpers import (
     plot_fairness_sinr, plot_solver_comparison, plot_allocation_matrix,
     metrics_to_csv, PALETTE,
 )
+from dashboard.utils.resource_monitor import (
+    track_resources, estimate_qaoa_resources, estimate_vqe_resources,
+    estimate_classical_resources, estimate_statevector_ram,
+)
 
 try:
     import plotly.graph_objects as go
@@ -40,6 +44,8 @@ PROBLEM_TYPES = {
     "📶 Beam Selection": "beam_selection",
     "⚡ Energy Efficiency": "energy_efficiency",
     "🔄 Handover Optimization": "handover",
+    "🏗️ BS Placement": "bs_placement",
+    "🌐 Quantum Network Routing": "quantum_routing",
 }
 
 SOLVER_METHODS = {
@@ -84,8 +90,22 @@ def render():
     with col_s2:
         run_quantum = st.toggle("⚛️ Compare with Quantum (QAOA)", value=False, key="lab_quantum")
         if run_quantum:
-            max_q = st.slider("Max quantum variables", 4, 30, 20, key="lab_max_q")
+            max_q = st.slider("Max quantum variables", 4, 100, 20, key="lab_max_q")
             config.setdefault("solver", {})["max_quantum_vars"] = max_q
+            if max_q > 50:
+                st.warning(
+                    "🔴 **>50 qubits** — Statevector simulation requires **multi-CPU or GPU** "
+                    "architecture. RAM: ~{:.0f} GB. Expect long runtimes on standard hardware.".format(
+                        2**max_q * 16 / (1024**3)
+                    )
+                )
+            elif max_q > 30:
+                st.info(
+                    "🟡 **>30 qubits** — Simulation will be slow on a single CPU. "
+                    "RAM estimate: ~{:.2f} GB statevector.".format(
+                        2**max_q * 16 / (1024**3)
+                    )
+                )
             if var_est > max_q:
                 st.warning(f"⚠️ Problem has **{var_est}** vars but quantum limit is **{max_q}**. "
                            f"Reduce network size or increase limit.")
@@ -192,6 +212,14 @@ def _problem_description(problem_type: str):
             "**Handover Optimization** — Reassign users to cells while minimising "
             "unnecessary handovers. Penalises deviations from current serving cell."
         ),
+        "bs_placement": (
+            "**BS Placement** — Facility location: select which candidate sites to build "
+            "base stations on, maximising coverage under a budget constraint."
+        ),
+        "quantum_routing": (
+            "**Quantum Network Routing** — Route entanglement / QKD keys through a "
+            "network of quantum repeaters, maximising end-to-end fidelity."
+        ),
     }
     st.info(descriptions.get(problem_type, ""))
 
@@ -207,6 +235,10 @@ def _estimate_vars(problem_type: str, n_ue: int, n_bs: int) -> int:
         return n_bs + n_ue * n_bs
     elif problem_type == "handover":
         return n_ue * n_bs
+    elif problem_type == "bs_placement":
+        return n_bs
+    elif problem_type == "quantum_routing":
+        return n_bs * n_bs
     return n_ue * n_bs
 
 
@@ -214,12 +246,12 @@ def _estimate_vars(problem_type: str, n_ue: int, n_bs: int) -> int:
 
 def _run_single_shot(config: dict, problem_type: str, solver_method: str, run_quantum: bool):
     with st.spinner(f"Solving {problem_type} with {solver_method}..."):
-        t0 = time.time()
-        results = run_problem_direct(
-            config, problem_type=problem_type,
-            solver_method=solver_method, run_quantum=run_quantum,
-        )
-        total = time.time() - t0
+        with track_resources() as res_report:
+            results = run_problem_direct(
+                config, problem_type=problem_type,
+                solver_method=solver_method, run_quantum=run_quantum,
+            )
+        total = res_report.wall_time_s
 
     st.success(f"✅ Complete in **{total:.2f}s** — {results['num_vars']} QUBO variables")
 
@@ -310,6 +342,133 @@ def _run_single_shot(config: dict, problem_type: str, solver_method: str, run_qu
             mc1, mc2 = st.columns(2)
             mc1.metric("Q Throughput", f"{q_met.get('avg_throughput_mbps', 0):.1f} Mbps")
             mc2.metric("Q Fairness", f"{q_met.get('fairness_jain', 0):.3f}")
+
+        # ── 🔬 Quantum Circuit Execution Details ─────────────────
+        st.subheader("🔬 Quantum Circuit Execution")
+
+        # Circuit stats
+        cs1, cs2, cs3, cs4 = st.columns(4)
+        cs1.metric("🔲 Qubits", q_res.get("num_qubits", q_res.get("num_vars", "?")))
+        cs2.metric("📏 Depth", q_res.get("circuit_depth", "?"))
+        cs3.metric("🧩 Gates", q_res.get("gate_count", "?"))
+        cs4.metric("🎯 Shots", q_res.get("shots", 1024))
+
+        # Circuit diagram
+        circuit_text = q_res.get("circuit_text", "")
+        if circuit_text:
+            with st.expander("📐 Circuit Diagram", expanded=True):
+                st.code(circuit_text, language=None)
+
+        # Optimal parameters
+        opt_params = q_res.get("optimal_params")
+        if opt_params:
+            with st.expander("🎛️ Optimal QAOA/VQE Parameters"):
+                p = len(opt_params) // 2
+                gamma = opt_params[:p]
+                beta = opt_params[p:]
+                param_rows = ""
+                for i in range(p):
+                    param_rows += f"| Layer {i+1} | {gamma[i]:.6f} | {beta[i]:.6f} |\n"
+                st.markdown(f"""
+| Layer | γ (cost) | β (mixer) |
+|-------|----------|-----------|
+{param_rows}
+                """)
+
+        # Convergence info
+        conv = q_res.get("convergence_info", {})
+        if conv:
+            with st.expander("📊 Convergence Info"):
+                ci1, ci2, ci3 = st.columns(3)
+                ci1.metric("Func Evals", conv.get("nfev", "?"))
+                ci2.metric("Converged", "✅" if conv.get("success") else "❌")
+                ci3.metric("Final Cost", f"{conv.get('final_cost', 0):.4f}")
+                if conv.get("message"):
+                    st.caption(f"Optimizer: {conv['message']}")
+
+        # Optimization history (convergence plot)
+        history = q_res.get("optimization_history", [])
+        if history and HAS_PLOTLY:
+            with st.expander("📈 Convergence Plot", expanded=True):
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(
+                    x=list(range(len(history))), y=history,
+                    mode="lines+markers",
+                    line=dict(color=PALETTE["primary"], width=2),
+                    marker=dict(size=4),
+                    name="Cost per Iteration",
+                ))
+                fig.update_layout(
+                    title="QAOA/VQE Optimization Convergence",
+                    xaxis_title="Iteration", yaxis_title="Expectation Value",
+                    plot_bgcolor=PALETTE["bg"], paper_bgcolor=PALETTE["card"],
+                    font=dict(color=PALETTE["text"]), height=350,
+                )
+                fig.update_xaxes(gridcolor=PALETTE["grid"])
+                fig.update_yaxes(gridcolor=PALETTE["grid"])
+                st.plotly_chart(fig, use_container_width=True)
+
+        # Measurement distribution
+        counts = q_res.get("measurement_counts", {})
+        if counts and HAS_PLOTLY:
+            with st.expander("🎲 Measurement Distribution (Top 15)"):
+                sorted_counts = sorted(counts.items(), key=lambda x: -x[1])[:15]
+                labels = [c[0] for c in sorted_counts]
+                values = [c[1] for c in sorted_counts]
+                fig = go.Figure(data=[go.Bar(
+                    x=labels, y=values,
+                    marker_color=PALETTE["primary"],
+                )])
+                fig.update_layout(
+                    title="Measurement Counts (Top Bitstrings)",
+                    xaxis_title="Bitstring", yaxis_title="Count",
+                    plot_bgcolor=PALETTE["bg"], paper_bgcolor=PALETTE["card"],
+                    font=dict(color=PALETTE["text"]), height=350,
+                    xaxis=dict(tickangle=45),
+                )
+                st.plotly_chart(fig, use_container_width=True)
+
+    # ── 📋 Problem-Specific Evaluation ────────────────────────────
+    st.subheader("📋 Solution Evaluation")
+    _show_evaluation_metrics(problem_type, c_res, c_met, q_res, q_met)
+
+    # ── 🖥️ Resource Usage ─────────────────────────────────────────
+    st.subheader("🖥️ Compute Resources Used")
+    rc1, rc2, rc3, rc4 = st.columns(4)
+    rc1.metric("⏱️ Wall Time", f"{res_report.wall_time_s * 1000:.1f} ms")
+    rc2.metric("🧠 Peak RAM", f"{res_report.peak_ram_mb:.2f} MB")
+    rc3.metric("🔧 CPU Time", f"{res_report.cpu_time_s * 1000:.1f} ms")
+    rc4.metric("📊 QUBO Vars", results["num_vars"])
+
+    # Show estimated resources for the algorithm
+    n_vars = results["num_vars"]
+    if "hybrid" in solver_method or solver_method == "greedy":
+        est = estimate_classical_resources(n_vars, "greedy")
+    elif solver_method == "simulated_annealing":
+        est = estimate_classical_resources(n_vars, "simulated_annealing")
+    elif solver_method == "exact":
+        est = estimate_classical_resources(n_vars, "exact")
+    else:
+        est = estimate_classical_resources(n_vars, "greedy")
+
+    with st.expander("📐 Algorithm Complexity Estimate"):
+        st.markdown(f"""
+        | Property | Value |
+        |----------|-------|
+        | **Algorithm** | {est.get('algorithm', solver_method)} |
+        | **Time Complexity** | {est.get('time_complexity', 'N/A')} |
+        | **Space Complexity** | {est.get('space_complexity', 'N/A')} |
+        | **Estimated RAM** | {est.get('ram_mb', 0):.4f} MB |
+        | **Actual Peak RAM** | {res_report.peak_ram_mb:.2f} MB |
+        """)
+        if run_quantum:
+            q_est = estimate_qaoa_resources(n_vars, 2, n_vars * (n_vars - 1) // 2)
+            st.markdown(f"""
+        | **QAOA Qubits** | {q_est['num_qubits']} |
+        | **QAOA Gates** | {q_est['total_gates']} |
+        | **QAOA Depth** | {q_est['circuit_depth']} |
+        | **Statevector RAM** | {q_est['ram_mb']:,.2f} MB |
+            """)
 
     # ── Export ────────────────────────────────────────────────────
     st.divider()
@@ -412,3 +571,78 @@ def _export_section(results, c_res, q_res, c_met, q_met):
     st.download_button("⬇️ Download Results JSON",
                        json.dumps(export, indent=2, default=str),
                        "telequm_results.json", "application/json")
+
+
+# ─── Problem-Specific Evaluation ─────────────────────────────────
+
+def _show_evaluation_metrics(problem_type, c_res, c_met, q_res, q_met):
+    """Display problem-specific evaluation metrics side-by-side."""
+
+    def _fmt(v, fmt=".2f"):
+        if v is None or v == 0:
+            return "—"
+        return f"{v:{fmt}}"
+
+    if problem_type == "prb_allocation":
+        st.markdown("**PRB Allocation Evaluation**")
+        cols = st.columns(4)
+        cols[0].metric("C: Throughput", f"{c_met.get('avg_throughput_mbps', 0):.1f} Mbps")
+        cols[1].metric("C: Fairness", _fmt(c_met.get('fairness_jain')))
+        if q_met:
+            cols[2].metric("Q: Throughput", f"{q_met.get('avg_throughput_mbps', 0):.1f} Mbps")
+            cols[3].metric("Q: Fairness", _fmt(q_met.get('fairness_jain')))
+
+    elif problem_type == "routing":
+        st.markdown("**Routing Evaluation**")
+        cols = st.columns(3)
+        cols[0].metric("C: Edges Used", c_met.get("num_edges", "—"))
+        cols[1].metric("C: Cost", _fmt(c_res.get("cost")))
+        if q_res and "cost" in q_res:
+            cols[2].metric("Q: Cost", _fmt(q_res.get("cost")))
+
+    elif problem_type == "beam_selection":
+        st.markdown("**Beam Selection Evaluation**")
+        cols = st.columns(3)
+        cols[0].metric("C: Assigned", c_met.get("num_assigned", "—"))
+        cols[1].metric("C: Cost", _fmt(c_res.get("cost")))
+        if q_res and "cost" in q_res:
+            cols[2].metric("Q: Cost", _fmt(q_res.get("cost")))
+
+    elif problem_type == "energy_efficiency":
+        st.markdown("**Energy Efficiency Evaluation**")
+        cols = st.columns(4)
+        cols[0].metric("C: Active Cells", c_met.get("active_cells", "—"))
+        cols[1].metric("C: Energy Saved", f"{c_met.get('energy_saved_pct', 0):.1f}%")
+        if q_met:
+            cols[2].metric("Q: Active Cells", q_met.get("active_cells", "—"))
+            cols[3].metric("Q: Energy Saved", f"{q_met.get('energy_saved_pct', 0):.1f}%")
+
+    elif problem_type == "handover":
+        st.markdown("**Handover Evaluation**")
+        cols = st.columns(3)
+        cols[0].metric("C: Handovers", c_met.get("num_handovers", "—"))
+        cols[1].metric("C: Cost", _fmt(c_res.get("cost")))
+        if q_res and "cost" in q_res:
+            cols[2].metric("Q: Handovers", q_met.get("num_handovers", "—") if q_met else "—")
+
+    elif problem_type == "bs_placement":
+        st.markdown("**BS Placement Evaluation**")
+        cols = st.columns(4)
+        cols[0].metric("C: Sites Selected", c_met.get("sites_selected", "—"))
+        cols[1].metric("C: Budget Used", f"{c_met.get('utilisation_pct', 0):.0f}%")
+        cols[2].metric("C: Cost", _fmt(c_res.get("cost")))
+        if q_met:
+            cols[3].metric("Q: Sites Selected", q_met.get("sites_selected", "—"))
+
+    elif problem_type == "quantum_routing":
+        st.markdown("**Quantum Network Routing Evaluation**")
+        cols = st.columns(4)
+        cols[0].metric("C: Hops", c_met.get("num_hops", "—"))
+        cols[1].metric("C: Fidelity", _fmt(c_met.get("end_to_end_fidelity"), ".4f"))
+        if q_met:
+            cols[2].metric("Q: Hops", q_met.get("num_hops", "—"))
+            cols[3].metric("Q: Fidelity", _fmt(q_met.get("end_to_end_fidelity"), ".4f"))
+
+    else:
+        st.caption("No specific evaluation metrics for this problem type.")
+

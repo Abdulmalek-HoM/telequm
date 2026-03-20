@@ -12,6 +12,8 @@ from telequm.problems.telecom_problems import (
     BeamSelection,
     EnergyEfficiency,
     HandoverOptimization,
+    BSPlacementProblem,
+    QuantumNetworkRouting,
 )
 
 __all__ = [
@@ -21,4 +23,6 @@ __all__ = [
     "BeamSelection",
     "EnergyEfficiency",
     "HandoverOptimization",
+    "BSPlacementProblem",
+    "QuantumNetworkRouting",
 ]

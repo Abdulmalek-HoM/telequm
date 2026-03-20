@@ -1,0 +1,1043 @@
+%% =============================================================================
+%% TELEQUM Portfolio — Comprehensive Technical Documentation
+%% =============================================================================
+%% A research-grade portfolio describing the architecture, features, and
+%% capabilities of the TELEQUM v2.1 Quantum-Native 6G Digital Twin Platform.
+%% =============================================================================
+
+\documentclass[11pt,a4paper]{article}
+
+%% ─── Packages ────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{amsmath, amssymb}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tcolorbox}
+\usepackage{tikz}
+\usepackage{forest}
+\usepackage{multicol}
+
+%% ─── Colour Palette ─────────────────────────────────────────────
+\definecolor{telequm}{RGB}{0,120,215}
+\definecolor{accent}{RGB}{255,107,0}
+\definecolor{quantum}{RGB}{130,60,200}
+\definecolor{codebg}{RGB}{245,245,250}
+\definecolor{linkblue}{RGB}{0,90,180}
+
+\hypersetup{colorlinks=true,linkcolor=telequm,urlcolor=linkblue,citecolor=quantum}
+
+%% ─── Listings Style ─────────────────────────────────────────────
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{telequm!30},
+  breaklines=true,
+  columns=fullflexible,
+  keywordstyle=\color{telequm}\bfseries,
+  commentstyle=\color{gray},
+  stringstyle=\color{accent},
+  showstringspaces=false,
+}
+
+%% ─── Section Formatting ─────────────────────────────────────────
+\titleformat{\section}{\Large\bfseries\color{telequm}}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries\color{telequm!80!black}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{telequm!60!black}}{\thesubsubsection}{1em}{}
+
+%% ─── Header / Footer ────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{telequm}{\textbf{TELEQUM} v2.1 Portfolio}}
+\fancyhead[R]{\small\textcolor{gray}{\today}}
+\fancyfoot[C]{\small\textcolor{gray}{\thepage}}
+\renewcommand{\headrulewidth}{0.4pt}
+
+%% ─── tcolorbox styles ───────────────────────────────────────────
+\tcbuselibrary{skins,breakable}
+\newtcolorbox{featurebox}[1]{
+  enhanced, breakable,
+  colback=telequm!5, colframe=telequm!70,
+  title={\textbf{#1}}, fonttitle=\bfseries\color{white},
+  coltitle=white, colbacktitle=telequm,
+  boxrule=0.5pt, arc=3pt,
+}
+\newtcolorbox{mathbox}[1]{
+  enhanced, breakable,
+  colback=quantum!5, colframe=quantum!50,
+  title={\textbf{#1}}, fonttitle=\bfseries\color{white},
+  coltitle=white, colbacktitle=quantum,
+  boxrule=0.5pt, arc=3pt,
+}
+\newtcolorbox{warnbox}[1]{
+  enhanced, breakable,
+  colback=accent!5, colframe=accent!70,
+  title={\textbf{#1}}, fonttitle=\bfseries\color{white},
+  coltitle=white, colbacktitle=accent,
+  boxrule=0.5pt, arc=3pt,
+}
+
+%% =================================================================
+\begin{document}
+
+%% ─── Title Page ──────────────────────────────────────────────────
+\begin{titlepage}
+\centering
+\vspace*{3cm}
+{\Huge\bfseries\textcolor{telequm}{TELEQUM} \par}
+\vspace{0.3cm}
+{\Large\textcolor{telequm!70}{Quantum-Native 6G Digital Twin Platform}\par}
+\vspace{0.8cm}
+{\large Version 2.1 — Technical Portfolio\par}
+\vspace{2cm}
+
+\begin{tcolorbox}[enhanced, colback=telequm!5, colframe=telequm!40,
+  width=0.85\textwidth, arc=5pt, boxrule=0.6pt]
+\centering
+\textbf{A research-grade, scenario-driven quantum telecom simulator}\\[4pt]
+bridging raw radio physics, network logic, and quantum optimization\\
+with an interactive Streamlit dashboard for education and experimentation.
+\end{tcolorbox}
+
+\vspace{2cm}
+{\large\textbf{Key Capabilities}\par}
+\vspace{0.5cm}
+\begin{minipage}{0.85\textwidth}
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{7 telecom optimization problems} with QUBO formulations
+  \item \textbf{5 solvers}: Greedy, Simulated Annealing, Exact, Hybrid, Quantum (QAOA/VQE)
+  \item \textbf{Full quantum circuit visibility}: ASCII diagrams, optimal parameters, convergence plots, measurement distributions
+  \item \textbf{Digital Twin}: time-series simulation with live KPI evolution
+  \item \textbf{Education Hub}: 8 interactive subtabs from Quantum~101 to Hardware~Benchmark
+  \item \textbf{3GPP-compliant} channel models (TR~38.901 UMa)
+  \item \textbf{Hardware benchmark tool}: device-aware solver time estimation
+\end{itemize}
+\end{minipage}
+
+\vfill
+{\small\textcolor{gray}{Generated \today}\par}
+\end{titlepage}
+
+%% ─── Table of Contents ──────────────────────────────────────────
+\tableofcontents
+\newpage
+
+%% =================================================================
+\section{Project Overview}
+%% =================================================================
+
+TELEQUM (Telecom Quantum Utility Module) is a \textbf{quantum-native 6G digital twin platform} designed to bridge the gap between raw radio physics, network optimization logic, and quantum computing algorithms. It serves as both a \textbf{research testbed} for quantum optimization in telecommunications and an \textbf{educational platform} for understanding the intersection of quantum computing and wireless networks.
+
+\subsection{Design Philosophy}
+
+\begin{enumerate}[label=\textbf{R\arabic*}]
+  \item \textbf{Modular Architecture} — Each component is self-contained with explicit interfaces
+  \item \textbf{Stateless Optimizers} — Solvers receive snapshots, return solutions, never mutate state
+  \item \textbf{Explicit QUBO Formulation} — Every problem exposes \texttt{build\_qubo()}, \texttt{decode\_solution()}, \texttt{evaluate\_cost()}
+  \item \textbf{Classical Baselines First} — Every quantum experiment has a classical comparison
+  \item \textbf{Scenario-Driven Methodology} — Experiments defined by reproducible YAML configs
+  \item \textbf{Read-Only Dashboard} — Dashboard never modifies the simulation engine state
+\end{enumerate}
+
+\subsection{Technology Stack}
+
+\begin{tabularx}{\textwidth}{lX}
+  \toprule
+  \textbf{Layer} & \textbf{Technologies} \\
+  \midrule
+  Core Language & Python 3.12 \\
+  Quantum SDK & Qiskit 1.x, qiskit-aer, qiskit-algorithms, qiskit-optimization \\
+  Simulation & NumPy, SciPy; 3GPP TR~38.901 UMa channel models \\
+  Dashboard & Streamlit, Plotly \\
+  External Bridges & MATLAB Engine (optional), ns-3 socket (optional) \\
+  Testing & pytest, pytest-cov, GitHub Actions CI \\
+  \bottomrule
+\end{tabularx}
+
+
+%% =================================================================
+\section{Package Structure \& File Map}
+%% =================================================================
+
+The project follows a modular layout with clear separation of concerns:
+
+\begin{lstlisting}[language={},title={\textbf{Project Root}: \texttt{notebooks/}}]
+notebooks/
+|-- telequm/                    # Core library
+|   |-- core/                   # Quantum primitives
+|   |   |-- circuits.py         # Quantum circuit construction
+|   |   |-- hamiltonians.py     # Hamiltonian builders
+|   |   |-- network_snapshot.py # UniversalNetworkSnapshot class
+|   |   +-- visualizations.py   # Bloch sphere, circuit plots
+|   |-- algorithms/             # Quantum & classical solvers
+|   |   |-- qaoa.py             # NetworkQAOA class
+|   |   |-- vqe.py              # ResourceVQE class
+|   |   |-- qml.py              # Quantum ML utilities
+|   |   +-- hybrid/             # HybridSolver (quantum-first, ensemble)
+|   |       +-- hybrid_solver.py
+|   |-- problems/               # QUBO problem library
+|   |   |-- base_problem.py     # BaseProblem ABC
+|   |   |-- prb_allocation.py   # PRBAllocationProblem
+|   |   +-- telecom_problems.py # 6 more: Routing, Beam, Energy,
+|   |                             Handover, BSPlacement, QuantumRouting
+|   |-- simulator/              # Simulation engine
+|   |   |-- engine.py           # SimulationEngine (time-step loop)
+|   |   |-- network_env.py      # NetworkEnvironment
+|   |   |-- optimization_bridge.py # QUBO<->solver bridge
+|   |   |-- event_queue.py      # Discrete-event queue
+|   |   |-- traffic_models.py   # Poisson, video, IoT traffic
+|   |   +-- mobility_models.py  # Pedestrian, RWP, vehicular
+|   |-- telecom/                # 3GPP utilities
+|   |   |-- resource_allocation.py
+|   |   |-- beamforming.py
+|   |   +-- network_optimization.py
+|   +-- bridges/                # External tool bridges
+|       |-- matlab_bridge.py
+|       +-- ns3_bridge.py
+|-- dashboard/                  # Streamlit web dashboard
+|   |-- app.py                  # Main entry point
+|   |-- components/
+|   |   |-- use_case_lab.py     # Single-shot QUBO experiments
+|   |   |-- digital_twin.py    # Time-series simulation viewer
+|   |   |-- education_hub.py   # 8-subtab learning platform
+|   |   +-- hardware_hub.py    # Hardware management
+|   +-- utils/
+|       |-- resource_monitor.py # CPU/RAM tracking + HW benchmark
+|       |-- snapshot_manager.py # Isolated env copies + problem factory
+|       |-- scenario_loader.py  # YAML/slider config builder
+|       +-- plot_helpers.py     # Plotly chart functions
+|-- experiments/                # Experiment infrastructure
+|-- benchmarks/                 # Standardized test topologies
++-- tests/                      # pytest test suite
+\end{lstlisting}
+
+
+%% =================================================================
+\section{Dashboard Architecture}
+%% =================================================================
+
+The Streamlit dashboard provides four main tabs, each serving a distinct purpose:
+
+\begin{center}
+\begin{tabularx}{0.95\textwidth}{lX}
+  \toprule
+  \textbf{Tab} & \textbf{Purpose} \\
+  \midrule
+  \textbf{Use-Case Lab} & Single-shot QUBO problem solving with classical vs.\ quantum comparison \\
+  \textbf{Digital Twin} & Multi-timestep network simulation with live KPI evolution \\
+  \textbf{Education Hub} & 8-subtab interactive learning platform \\
+  \textbf{Hardware Hub} & Hardware management and configuration \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+
+%% =================================================================
+\section{Use-Case Lab}
+\label{sec:usecase}
+%% =================================================================
+
+The Use-Case Lab enables \textbf{single-shot QUBO experiments} with instant classical-vs-quantum comparison.
+
+\subsection{Workflow}
+
+\begin{enumerate}
+  \item \textbf{Network Configuration} — Sliders for BS count (2--8), UE count (2--20), area size, Tx power, frequency, seed; or load from preset/YAML.
+  \item \textbf{Problem Selection} — Choose from 7 telecom problems (see Section~\ref{sec:problems}).
+  \item \textbf{Solver Selection} — Classical (Greedy, SA, Exact) or Hybrid (Quantum-First, Ensemble).
+  \item \textbf{Quantum Toggle} — Enable QAOA comparison with adjustable max variables (4--100).
+  \item \textbf{Experiment Mode} — Single-Shot QUBO or Full Simulation with time-series.
+\end{enumerate}
+
+\subsection{QUBO Variable Limits}
+
+The quantum variable slider ranges from 4 to \textbf{100 variables}, with tiered resource warnings:
+
+\begin{center}
+\begin{tabular}{ccl}
+  \toprule
+  \textbf{Range} & \textbf{Level} & \textbf{Warning} \\
+  \midrule
+  4--30 & \textcolor{green!60!black}{Normal} & No warnings \\
+  31--50 & \textcolor{yellow!60!black}{Info} & ``Slow on single CPU; RAM estimate shown'' \\
+  51--100 & \textcolor{red!80!black}{Warning} & ``Requires multi-CPU or GPU architecture'' \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Output Panels}
+
+After execution, the Use-Case Lab displays:
+
+\begin{itemize}
+  \item \textbf{KPI Cards}: Cells, Users, QUBO Vars, Runtime
+  \item \textbf{Network State}: topology + association plot, SINR heatmap
+  \item \textbf{Allocation Heatmap}: UE $\times$ Cell matrix
+  \item \textbf{Classical Result}: method, cost, runtime, metrics (throughput, fairness)
+  \item \textbf{Quantum Result}: cost, runtime, improvement percentage
+  \item \textbf{Quantum Circuit Execution} (see Section~\ref{sec:circuit_viz})
+  \item \textbf{Solution Evaluation}: problem-specific KPIs (see Section~\ref{sec:eval})
+  \item \textbf{Compute Resources}: wall time, peak RAM, CPU time, complexity estimate
+  \item \textbf{Export}: download results as JSON
+\end{itemize}
+
+
+%% =================================================================
+\section{Quantum Circuit Execution Visibility}
+\label{sec:circuit_viz}
+%% =================================================================
+
+When quantum solving is enabled, the dashboard displays comprehensive circuit execution details:
+
+\subsection{Circuit Statistics}
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Metric} & \textbf{Description} \\
+  \midrule
+  Qubits & Number of qubits = QUBO variables \\
+  Depth & Circuit depth (layers of parallel gates) \\
+  Gates & Total gate count (Hadamard, RZZ, Rx) \\
+  Shots & Measurement shots per expectation evaluation \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Circuit Diagram}
+
+The actual QAOA circuit is rendered as an ASCII text diagram using Qiskit's \texttt{QuantumCircuit.draw("text")}. This shows the exact gate sequence applied:
+
+\begin{lstlisting}[title={\textbf{Example}: 4-qubit QAOA circuit (p=2)}]
+     +---+                           +---+
+q_0: | H |--RZZ(g0)--RZZ(g0)--Rx(b0)--| ... |--meas
+     +---+                           +---+
+q_1: | H |--RZZ(g0)--RZZ(g0)--Rx(b0)--| ... |--meas
+     +---+                           +---+
+q_2: | H |--RZZ(g0)-----------Rx(b0)--| ... |--meas
+     +---+                           +---+
+q_3: | H |--RZZ(g0)-----------Rx(b0)--| ... |--meas
+     +---+                           +---+
+\end{lstlisting}
+
+\subsection{Optimal Parameters Table}
+
+The optimized QAOA angles are displayed per layer:
+
+\begin{center}
+\begin{tabular}{ccc}
+  \toprule
+  \textbf{Layer} & $\gamma$ \textbf{(cost)} & $\beta$ \textbf{(mixer)} \\
+  \midrule
+  1 & 0.523691 & 1.047382 \\
+  2 & 0.785028 & 0.392514 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Convergence Plot}
+
+An interactive Plotly chart shows the QAOA/VQE optimization convergence — expectation value versus optimizer iteration, tracking how the cost decreases during the COBYLA optimization loop.
+
+\subsection{Measurement Distribution}
+
+A bar chart of the top 15 measured bitstrings by count, showing the probability landscape of the quantum state. The most frequent bitstring is the optimal solution.
+
+\subsection{Convergence Info}
+
+\begin{itemize}
+  \item \textbf{Function Evaluations}: number of times the quantum circuit was executed
+  \item \textbf{Converged}: whether the scipy optimizer converged successfully
+  \item \textbf{Final Cost}: final expectation value
+  \item \textbf{Optimizer Message}: e.g., ``Maximum number of function evaluations exceeded''
+\end{itemize}
+
+
+%% =================================================================
+\section{Digital Twin — Live Simulation}
+%% =================================================================
+
+The Digital Twin tab runs \textbf{multi-timestep network simulations} and visualizes the evolution of network KPIs over time.
+
+\subsection{Configuration (Sidebar)}
+
+\begin{itemize}
+  \item \textbf{Network}: BS count, UE count, area size, seed
+  \item \textbf{Problem}: 7 telecom problems (same as Use-Case Lab)
+  \item \textbf{Simulation}: timesteps (10--200), traffic model (Poisson/video/IoT), mobility model (pedestrian/RWP/vehicular)
+  \item \textbf{Solver}: classical method, optimization interval
+  \item \textbf{Quantum}: toggle QAOA comparison (4--100 vars, same tiered warnings)
+\end{itemize}
+
+\subsection{Simulation Pipeline}
+
+\begin{enumerate}
+  \item Run full time-series simulation via \texttt{SimulationEngine}
+  \item Collect per-timestep metrics (throughput, SINR, fairness, active UEs)
+  \item Run QUBO problem solve on the \emph{final} network state
+  \item Display all results with interactive exploration
+\end{enumerate}
+
+\subsection{Output Views}
+
+\begin{featurebox}{Digital Twin Dashboard Panels}
+\begin{itemize}
+  \item \textbf{KPI Banner}: throughput, SINR, Jain fairness, active UEs, timesteps
+  \item \textbf{Network State}: final topology + coverage heatmap
+  \item \textbf{Performance Over Time}: throughput and fairness/SINR time-series plots
+  \item \textbf{Solver Costs Over Time}: classical QUBO cost at optimization steps
+  \item \textbf{QUBO Solve Results}: classical vs.\ quantum comparison on final state
+  \item \textbf{Quantum Circuit Execution}: same full circuit visibility as Use-Case Lab
+  \item \textbf{Compute Resources}: total time, peak RAM, CPU time
+  \item \textbf{Timestep Explorer}: slider to inspect any individual timestep's KPIs
+\end{itemize}
+\end{featurebox}
+
+
+%% =================================================================
+\section{Telecom Optimization Problems}
+\label{sec:problems}
+%% =================================================================
+
+TELEQUM implements \textbf{7 telecom optimization problems}, each with a complete QUBO formulation, classical solver support, quantum solver support, and problem-specific evaluation metrics.
+
+%% ─── Problem 1 ──────────────────────────────────────────────────
+\subsection{PRB Allocation (Resource Scheduling)}
+
+\begin{mathbox}{Mathematical Formulation}
+\textbf{Variables:} $x_{u,b} \in \{0,1\}$ — user $u$ served by BS $b$.
+
+\textbf{Objective:}
+$$\min_{x} \sum_{u,b} -\text{SINR}_{u,b} \cdot x_{u,b} + \lambda_1 \sum_u \left(\sum_b x_{u,b} - 1\right)^2 + \lambda_2 \sum_b \text{cap\_penalty}(b)$$
+
+\textbf{Constraints:}
+\begin{itemize}[nosep]
+  \item Each user served by exactly one BS: $\sum_b x_{u,b} = 1 \quad \forall u$
+  \item BS capacity: $\sum_u x_{u,b} \leq C_b \quad \forall b$
+\end{itemize}
+
+\textbf{QUBO size:} $n = U \times B$ variables.
+\end{mathbox}
+
+\begin{itemize}
+  \item \textbf{Classical techniques}: Proportional Fair (PF), Round Robin (RR), Max-Rate, WFQ, Hungarian Algorithm, ILP
+  \item \textbf{Bottleneck}: NP-hard for joint multi-cell scheduling; real-time 1ms TTI constraint
+  \item \textbf{Evaluation}: avg throughput (Mbps), sum throughput, Jain fairness index
+  \item \textbf{Files}: \texttt{problems/prb\_allocation.py}, \texttt{telecom/resource\_allocation.py}
+\end{itemize}
+
+%% ─── Problem 2 ──────────────────────────────────────────────────
+\subsection{Network Routing Optimization}
+
+\begin{mathbox}{Mathematical Formulation}
+\textbf{Variables:} $x_{i,j} \in \{0,1\}$ — edge $(i,j)$ included in path.
+
+\textbf{Objective:}
+$$\min_{x} \sum_{(i,j)} -\overline{\text{SINR}}_j \cdot x_{i,j}$$
+
+\textbf{QUBO size:} $n = N^2$ variables (where $N$ = number of cells/nodes).
+\end{mathbox}
+
+\begin{itemize}
+  \item \textbf{Classical}: Dijkstra/OSPF, Bellman-Ford/BGP, Multi-Commodity Flow, Segment Routing
+  \item \textbf{Bottleneck}: NP-hard for multi-commodity; SDN controller latency
+  \item \textbf{Evaluation}: number of edges, total path cost
+  \item \textbf{File}: \texttt{problems/telecom\_problems.py} (\texttt{RoutingOptimization})
+\end{itemize}
+
+%% ─── Problem 3 ──────────────────────────────────────────────────
+\subsection{Beam Selection (Beamforming Optimization)}
+
+\begin{mathbox}{Mathematical Formulation}
+\textbf{Variables:} $x_{u,b} \in \{0,1\}$ — user $u$ uses beam $b$ from codebook.
+
+\textbf{Objective:}
+$$\min_{x} \sum_{u,b} -G_{u,b} \cdot x_{u,b} + \lambda \sum_u \left(\sum_b x_{u,b} - 1\right)^2$$
+
+\textbf{Constraint:} One beam per user. \quad \textbf{QUBO size:} $n = U \times B_{\text{codebook}}$.
+\end{mathbox}
+
+\begin{itemize}
+  \item \textbf{Classical}: Zero-Forcing (ZF), MMSE, HHL quantum linear algebra
+  \item \textbf{Bottleneck}: $O(N^3)$ matrix inversion scales poorly with massive MIMO
+  \item \textbf{File}: \texttt{problems/telecom\_problems.py} (\texttt{BeamSelection})
+\end{itemize}
+
+%% ─── Problem 4 ──────────────────────────────────────────────────
+\subsection{Energy Efficiency (Cell On/Off)}
+
+\begin{mathbox}{Mathematical Formulation}
+\textbf{Variables:} $y_c \in \{0,1\}$ — cell $c$ is ON; $x_{u,c}$ — user $u$ assigned to cell $c$.
+
+\textbf{Objective:}
+$$\min \sum_c P_c \cdot y_c - \sum_{u,c} \text{SINR}_{u,c} \cdot x_{u,c}$$
+
+\textbf{QUBO size:} $n = N_{\text{cell}} + U \times N_{\text{cell}}$ variables.
+\end{mathbox}
+
+\begin{itemize}
+  \item \textbf{Classical}: GSMA energy frameworks, column generation, threshold-based heuristics
+  \item \textbf{Goal}: Net-zero 2050; 15--30\% energy savings in dense urban deployments
+  \item \textbf{Evaluation}: active cells, energy saved (\%)
+  \item \textbf{File}: \texttt{problems/telecom\_problems.py} (\texttt{EnergyEfficiency})
+\end{itemize}
+
+%% ─── Problem 5 ──────────────────────────────────────────────────
+\subsection{Handover Optimization}
+
+\begin{mathbox}{Mathematical Formulation}
+\textbf{Variables:} $x_{u,c}$ — user $u$ assigned to cell $c$.
+
+\textbf{Objective:}
+$$\min_{x} \sum_{u,c} -\text{SINR}_{u,c} \cdot x_{u,c} + h \sum_{u} \sum_{c \neq s_u} x_{u,c}$$
+where $s_u$ is the current serving cell and $h$ is the handover penalty.
+
+\textbf{QUBO size:} $n = U \times N_{\text{cell}}$.
+\end{mathbox}
+
+\begin{itemize}
+  \item \textbf{Classical}: A3/A5 event triggers, Conditional Handover (CHO, 3GPP Rel-16)
+  \item \textbf{Bottleneck}: Ping-pong handovers in dense small-cell deployments
+  \item \textbf{Evaluation}: number of handovers
+  \item \textbf{File}: \texttt{problems/telecom\_problems.py} (\texttt{HandoverOptimization})
+\end{itemize}
+
+%% ─── Problem 6 ──────────────────────────────────────────────────
+\subsection{Base Station Placement (Facility Location)}
+
+\begin{mathbox}{Mathematical Formulation}
+\textbf{Variables:} $y_k \in \{0,1\}$ — candidate site $k$ is built.
+
+\textbf{Objective:}
+$$\min_{y} \sum_k \left(c_k - \sum_u \max(\text{SINR}_{u,k}, 0)\right) y_k + \lambda \left(\sum_k y_k - B\right)^2$$
+
+\textbf{Budget constraint:} $\sum_k y_k \leq B$. \quad \textbf{QUBO size:} $n = K$ (candidate sites).
+\end{mathbox}
+
+\begin{itemize}
+  \item \textbf{Classical}: MILP, Genetic Algorithm, Simulated Annealing, radio planning tools (Atoll, Planet)
+  \item \textbf{Evaluation}: sites selected, budget utilization (\%)
+  \item \textbf{File}: \texttt{problems/telecom\_problems.py} (\texttt{BSPlacementProblem})
+\end{itemize}
+
+%% ─── Problem 7 ──────────────────────────────────────────────────
+\subsection{Quantum Network Routing (Future Internet)}
+
+\begin{mathbox}{Mathematical Formulation}
+\textbf{Variables:} $x_{i,j} \in \{0,1\}$ — link $(i,j)$ selected for entanglement distribution.
+
+\textbf{Objective} (fidelity maximization via additive $-\log F$):
+$$\min_{x} \sum_{(i,j)} -\log F_{i,j} \cdot x_{i,j}$$
+where $F_{i,j} = F_{\text{base}} \cdot e^{-d_{i,j}/2000}$ is the link fidelity.
+
+\textbf{QUBO size:} $n = N^2$ (all possible links).
+\end{mathbox}
+
+\begin{itemize}
+  \item \textbf{Context}: Quantum Key Distribution (QKD), entanglement swapping, quantum repeater networks
+  \item \textbf{Evaluation}: number of hops, end-to-end fidelity
+  \item \textbf{File}: \texttt{problems/telecom\_problems.py} (\texttt{QuantumNetworkRouting})
+\end{itemize}
+
+
+%% =================================================================
+\section{Problem-Specific Evaluation Metrics}
+\label{sec:eval}
+%% =================================================================
+
+After every solve, TELEQUM displays \textbf{problem-specific KPIs} comparing classical (C) and quantum (Q) solutions side-by-side:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{lX}
+  \toprule
+  \textbf{Problem} & \textbf{Evaluation Metrics} \\
+  \midrule
+  PRB Allocation & C/Q: Throughput (Mbps), Jain Fairness Index \\
+  Routing & C/Q: Edges Used, QUBO Cost \\
+  Beam Selection & C/Q: Users Assigned, QUBO Cost \\
+  Energy Efficiency & C/Q: Active Cells, Energy Saved (\%) \\
+  Handover & C/Q: Number of Handovers, QUBO Cost \\
+  BS Placement & C/Q: Sites Selected, Budget Utilization (\%) \\
+  Quantum Routing & C/Q: Hops, End-to-End Fidelity \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+
+%% =================================================================
+\section{Solver Architecture}
+%% =================================================================
+
+\subsection{Solver Pipeline}
+
+The optimization pipeline follows a strict stateless pattern:
+
+\begin{enumerate}
+  \item \textbf{Snapshot}: \texttt{NetworkEnvironment} $\to$ \texttt{UniversalNetworkSnapshot}
+  \item \textbf{QUBO Build}: \texttt{BaseProblem.to\_qubo()} $\to$ $(Q, \text{offset}, \text{metadata})$
+  \item \textbf{Ising Convert}: \texttt{OptimizationBridge.\_qubo\_to\_ising()} via $x_i = (1-Z_i)/2$
+  \item \textbf{Solve}: classical baseline \textbf{and/or} quantum algorithm
+  \item \textbf{Decode}: \texttt{problem.decode\_solution(x, metadata)} $\to$ allocation dict
+  \item \textbf{Evaluate}: \texttt{problem.compute\_metrics()} $\to$ KPIs
+\end{enumerate}
+
+\subsection{Classical Solvers}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{lXcc}
+  \toprule
+  \textbf{Solver} & \textbf{Method} & \textbf{Time} & \textbf{Space} \\
+  \midrule
+  Greedy & Variable-by-variable QUBO minimization & $O(n^3)$ & $O(n^2)$ \\
+  Simulated Annealing & Flip-based SA with exponential cooling & $O(n^2 T)$ & $O(n^2)$ \\
+  Exact Brute-Force & Enumerate all $2^n$ bitstrings & $O(2^n n)$ & $O(n)$ \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Quantum Solvers}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{lXc}
+  \toprule
+  \textbf{Algorithm} & \textbf{Description} & \textbf{File} \\
+  \midrule
+  \textbf{QAOA} & Quantum Approximate Optimization Algorithm; $p$-layer parameterized circuit with cost ($e^{-i\gamma H_C}$) and mixer ($e^{-i\beta H_M}$) unitaries. Optimized via COBYLA. & \texttt{qaoa.py} \\
+  \textbf{VQE} & Variational Quantum Eigensolver; RealAmplitudes ansatz with Ry rotations and CNOT entangling layers. & \texttt{vqe.py} \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Hybrid Solvers}
+
+The \texttt{HybridSolver} class (\texttt{algorithms/hybrid/hybrid\_solver.py}) implements two strategies:
+
+\begin{itemize}
+  \item \textbf{Quantum-First}: attempt quantum solve; fall back to classical if the problem exceeds qubit limits
+  \item \textbf{Ensemble}: run all available solvers (greedy, SA, quantum) and select the best solution by QUBO cost
+\end{itemize}
+
+\subsection{Solver Output (with Circuit Info)}
+
+The \texttt{OptimizationBridge.solve\_quantum()} method returns a rich result dictionary:
+
+\begin{center}
+\begin{tabularx}{\textwidth}{lX}
+  \toprule
+  \textbf{Field} & \textbf{Description} \\
+  \midrule
+  \texttt{solution} & Binary vector $x \in \{0,1\}^n$ \\
+  \texttt{decoded} & Human-readable allocation (problem-specific) \\
+  \texttt{cost} & QUBO cost $x^T Q x + \text{offset}$ \\
+  \texttt{runtime\_s} & Wall-clock time (seconds) \\
+  \texttt{circuit\_text} & ASCII circuit diagram \\
+  \texttt{optimal\_params} & Final $[\gamma_0..\gamma_p, \beta_0..\beta_p]$ \\
+  \texttt{optimization\_history} & Cost per optimizer iteration \\
+  \texttt{measurement\_counts} & Bitstring $\to$ count dictionary \\
+  \texttt{circuit\_depth} & Circuit depth \\
+  \texttt{gate\_count} & Total gate count \\
+  \texttt{num\_qubits} & Qubits used \\
+  \texttt{convergence\_info} & nfev, success, message, final\_cost \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+
+%% =================================================================
+\section{QAOA Circuit Construction}
+%% =================================================================
+
+The QAOA circuit for a general QUBO with Ising Hamiltonian $H_C$ is constructed as:
+
+\subsection{QUBO to Ising Conversion}
+
+Using the substitution $x_i = \frac{1 - Z_i}{2}$, the QUBO objective $\min x^T Q x$ becomes an Ising Hamiltonian:
+
+$$H_C = \sum_{i<j} \frac{Q_{ij}}{4} Z_i Z_j - \sum_i \left(\frac{Q_{ii}}{2} + \sum_{j>i} \frac{Q_{ij}}{4}\right) Z_i + \text{const}$$
+
+\subsection{Circuit Layers}
+
+For each of $p$ QAOA layers:
+
+\begin{enumerate}
+  \item \textbf{Initial State}: Apply Hadamard to all qubits: $|+\rangle^{\otimes n}$
+  \item \textbf{Cost Layer} ($e^{-i\gamma_k H_C}$): For each non-zero $ZZ$ term: CNOT $\to$ Rz($\gamma$) $\to$ CNOT
+  \item \textbf{Mixer Layer} ($e^{-i\beta_k H_M}$): Apply Rx($2\beta_k$) to each qubit
+  \item \textbf{Measurement}: measure all qubits in computational basis
+\end{enumerate}
+
+\subsection{Gate Count Analysis}
+
+\begin{center}
+\begin{tabular}{lc}
+  \toprule
+  \textbf{Component} & \textbf{Gates per Layer} \\
+  \midrule
+  Cost layer (per edge) & 2 CNOT + 1 Rz = 3 gates \\
+  Mixer layer (per qubit) & 1 Rx \\
+  \midrule
+  \textbf{Total per layer} & $3|E| + n$ \\
+  \textbf{Total circuit} & $p(3|E| + n) + n$ (initial H gates) \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+
+%% =================================================================
+\section{Education Hub — 8 Interactive Subtabs}
+%% =================================================================
+
+The Education Hub provides a comprehensive learning platform with 8 subtabs:
+
+\subsection{Subtab 1: Quantum Computing 101}
+
+Covers fundamental quantum concepts: qubits, superposition, entanglement, Bloch sphere visualization, quantum gates (X, Y, Z, H, CNOT, Rz), and the quantum advantage thesis.
+
+\subsection{Subtab 2: Memory \& Complexity Calculator}
+
+Interactive tools for:
+\begin{itemize}
+  \item \textbf{Statevector RAM estimation}: $2^n \times 16$ bytes (complex128)
+  \item \textbf{Big-O complexity analysis}: visual scaling comparison across algorithms
+  \item \textbf{Feasibility assessment}: laptop ($<16$\,GB) vs.\ server ($<256$\,GB) thresholds
+\end{itemize}
+
+\subsection{Subtab 3: Algorithm Deep Dives}
+
+Detailed explanations of each solver, organized as:
+\begin{center}
+\begin{tabularx}{\textwidth}{lX}
+  \toprule
+  \textbf{Algorithm} & \textbf{Content} \\
+  \midrule
+  QAOA & Math formulation $\to$ QUBO conversion $\to$ Ising map $\to$ circuit $\to$ measurement $\to$ code mapping \\
+  VQE & Ansatz design $\to$ parameter optimization $\to$ convergence analysis \\
+  Greedy & Step-by-step variable selection strategy $\to$ complexity proof \\
+  SA & Temperature schedule $\to$ acceptance probability $\to$ convergence \\
+  Exact & Enumeration strategy $\to$ infeasibility threshold \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Subtab 4: Quantum Circuits Explained}
+
+Gate-by-gate breakdown of QAOA and VQE circuit construction with ASCII diagrams, covering:
+\begin{itemize}
+  \item Cost unitary implementation (CNOT-Rz-CNOT)
+  \item Mixer unitary implementation (Rx)
+  \item Parameter binding and optimization loop
+  \item Measurement and bitstring decoding
+\end{itemize}
+
+\subsection{Subtab 5: Problem Statements \& Modeling}
+
+Detailed descriptions of all 7 telecom problems, each including:
+\begin{itemize}
+  \item Real-world context and industry relevance
+  \item Mathematical formulation (variables, objectives, constraints)
+  \item Classical vendor techniques and their limitations
+  \item Scalability bottlenecks (NP-hardness, real-time constraints)
+  \item QUBO formulation and quantum approach
+  \item Key references (3GPP standards, academic papers)
+\end{itemize}
+
+\subsection{Subtab 6: Solver Architecture \& File Map}
+
+Visual pipeline diagram showing how data flows from \texttt{NetworkEnvironment} through the QUBO construction, solver dispatch, and result decoding. Includes a complete file table mapping each module to its purpose.
+
+\subsection{Subtab 7: Research References}
+
+Curated database of 9 key research papers organized by domain:
+
+\begin{enumerate}
+  \item Choi et al.\ — Quantum Approximation for Wireless Scheduling (IEEE, 2019)
+  \item Kim et al.\ — Quantum Annealing for Resource Allocation (IEEE Wireless, 2021)
+  \item Farhi et al.\ — QAOA (arXiv:1411.4028, 2014)
+  \item Peruzzo et al.\ — VQE (Nature Comm., 2014)
+  \item Harrigan et al.\ — QAOA on sycamore (Nature Physics, 2021)
+  \item 3GPP TR~38.901 — Channel Models (v16.1.0)
+  \item Moll et al.\ — Quantum Optimization for Telco (IEEE Network, 2023)
+  \item Caleffi et al.\ — Quantum Internet Networking (IEEE Network, 2020)
+  \item Kozlowski \& Wehner — Quantum Network Protocol Design (arXiv, 2019)
+\end{enumerate}
+
+\subsection{Subtab 8: Hardware Benchmark}
+
+Interactive hardware profiling tool that:
+
+\begin{featurebox}{Hardware Benchmark Features}
+\begin{enumerate}
+  \item \textbf{Detects Device Specs}: CPU name, cores, frequency; RAM total/available; GPU (Apple Metal or NVIDIA); OS; Python version; architecture
+  \item \textbf{Runs Performance Benchmark}: 500$\times$500 matrix multiply to compute GFLOPS score
+  \item \textbf{Estimates Solver Times}: for any QUBO size $n$, shows:
+    \begin{itemize}
+      \item Per-solver: Big-O notation, operation count, estimated wall-clock time, RAM, feasibility
+      \item Comparison table at multiple scales ($n = 5, 10, 15, 20, 25, 30, 40, 50, 60$)
+    \end{itemize}
+  \item \textbf{Performance Tier Assessment}: High ($>$20 GFLOPS), Standard (5--20), Low ($<$5)
+\end{enumerate}
+\end{featurebox}
+
+
+%% =================================================================
+\section{Simulation Engine}
+%% =================================================================
+
+The \texttt{SimulationEngine} (\texttt{simulator/engine.py}) drives the Digital Twin's time-series simulation:
+
+\subsection{Engine Loop}
+
+\begin{enumerate}
+  \item Initialize \texttt{NetworkEnvironment} from config
+  \item For each timestep $t = 0, 1, \ldots, T$:
+    \begin{enumerate}
+      \item Update user positions via mobility model
+      \item Generate new traffic arrivals
+      \item Recalculate channel (path loss, SINR) using 3GPP TR~38.901
+      \item At optimization intervals: take snapshot $\to$ build QUBO $\to$ solve $\to$ apply allocation
+      \item Record metrics (throughput, SINR, fairness, active UEs)
+    \end{enumerate}
+  \item Return full metrics history + final environment state
+\end{enumerate}
+
+\subsection{Channel Model}
+
+SINR is computed using the 3GPP TR~38.901 Urban Macro (UMa) path loss model:
+
+$$\text{PL}[\text{dB}] = 28.0 + 22 \log_{10}(d) + 20 \log_{10}(f_c)$$
+
+where $d$ is the 3D distance in meters and $f_c$ is the carrier frequency in GHz.
+
+\subsection{Traffic Models}
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Model} & \textbf{Characteristics} \\
+  \midrule
+  Poisson & Constant arrival rate $\lambda$, exponential inter-arrival times \\
+  Video & Bursty traffic with periodic large packets \\
+  IoT & Low-rate, sporadic transmissions \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Mobility Models}
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Model} & \textbf{Characteristics} \\
+  \midrule
+  Pedestrian & Low speed ($\sim$1.2 m/s), random direction changes \\
+  Random Waypoint & Pick random destination, move in straight line, pause \\
+  Vehicular & High speed ($\sim$30 m/s), road-constrained movement \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+
+%% =================================================================
+\section{Resource Monitoring}
+%% =================================================================
+
+The \texttt{resource\_monitor.py} module provides real-time resource tracking:
+
+\subsection{Track Resources Context Manager}
+
+\begin{lstlisting}[language=Python]
+with track_resources() as report:
+    result = solve_problem(...)
+print(report.wall_time_s, report.peak_ram_mb, report.cpu_time_s)
+\end{lstlisting}
+
+Uses \texttt{tracemalloc} for peak RAM and \texttt{time.process\_time()} for CPU time.
+
+\subsection{Estimation Functions}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{lX}
+  \toprule
+  \textbf{Function} & \textbf{Purpose} \\
+  \midrule
+  \texttt{estimate\_statevector\_ram(n)} & RAM for $2^n$ complex128 entries \\
+  \texttt{estimate\_qaoa\_resources(n, p, |E|)} & Gates, depth, parameters, RAM \\
+  \texttt{estimate\_vqe\_resources(n, layers)} & Ansatz gates/depth/parameters \\
+  \texttt{estimate\_classical\_resources(n, method)} & Big-O time/space per method \\
+  \texttt{benchmark\_device()} & CPU/RAM/GPU specs + GFLOPS score \\
+  \texttt{estimate\_solver\_times(n, hw)} & Per-solver wall-clock time estimate \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+
+%% =================================================================
+\section{External Bridges}
+%% =================================================================
+
+TELEQUM supports optional integration with external tools:
+
+\subsection{MATLAB Bridge}
+
+\texttt{bridges/matlab\_bridge.py} connects to the MATLAB Engine for leveraging MATLAB's Communications Toolbox, specifically for:
+\begin{itemize}
+  \item Advanced channel modeling beyond 3GPP baseline
+  \item Proprietary beamforming algorithms
+  \item Result validation against MATLAB reference implementations
+\end{itemize}
+
+\subsection{ns-3 Bridge}
+
+\texttt{bridges/ns3\_bridge.py} connects to ns-3 via socket for:
+\begin{itemize}
+  \item Packet-level network simulation
+  \item MAC/PHY layer validation
+  \item End-to-end latency and jitter analysis
+\end{itemize}
+
+
+%% =================================================================
+\section{Testing \& Benchmarking}
+%% =================================================================
+
+\subsection{Test Suite}
+
+The \texttt{tests/} directory contains pytest-based tests:
+\begin{itemize}
+  \item \texttt{test\_simulator.py}: engine initialization, snapshot creation, QUBO construction, solver execution
+\end{itemize}
+
+Run with: \texttt{pytest tests/ -v --cov=telequm}
+
+\subsection{Benchmarks}
+
+The \texttt{benchmarks/} directory provides standardized topologies:
+\begin{itemize}
+  \item Small (3 BS, 6 UE), Medium (5 BS, 15 UE), Large (8 BS, 30 UE)
+  \item \texttt{run\_benchmarks.py}: automated benchmark runner with CSV output
+\end{itemize}
+
+
+%% =================================================================
+\section{Complete File Reference}
+%% =================================================================
+
+\begin{longtable}{lp{8cm}}
+\toprule
+\textbf{File} & \textbf{Purpose} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{File} & \textbf{Purpose} \\
+\midrule
+\endhead
+
+\multicolumn{2}{l}{\textbf{telequm/core/}} \\
+\texttt{circuits.py} & Quantum circuit construction helpers \\
+\texttt{hamiltonians.py} & Hamiltonian builder (Ising, Heisenberg) \\
+\texttt{network\_snapshot.py} & \texttt{UniversalNetworkSnapshot}, \texttt{CellInfo}, \texttt{UserInfo} \\
+\texttt{visualizations.py} & Bloch sphere plots, circuit rendering \\
+\midrule
+
+\multicolumn{2}{l}{\textbf{telequm/algorithms/}} \\
+\texttt{qaoa.py} & \texttt{NetworkQAOA}: QAOA with COBYLA optimizer \\
+\texttt{vqe.py} & \texttt{ResourceVQE}: VQE with RealAmplitudes ansatz \\
+\texttt{qml.py} & Quantum machine learning utilities \\
+\texttt{hybrid/hybrid\_solver.py} & \texttt{HybridSolver}: quantum-first \& ensemble strategies \\
+\midrule
+
+\multicolumn{2}{l}{\textbf{telequm/problems/}} \\
+\texttt{base\_problem.py} & \texttt{BaseProblem} ABC with \texttt{to\_qubo()}, \texttt{solve\_quantum()}, etc. \\
+\texttt{prb\_allocation.py} & \texttt{PRBAllocationProblem} \\
+\texttt{telecom\_problems.py} & 6 problems: Routing, Beam, Energy, Handover, BSPlacement, QuantumRouting \\
+\midrule
+
+\multicolumn{2}{l}{\textbf{telequm/simulator/}} \\
+\texttt{engine.py} & \texttt{SimulationEngine}: time-step loop \\
+\texttt{network\_env.py} & \texttt{NetworkEnvironment}: BS/UE state, SINR calculation \\
+\texttt{optimization\_bridge.py} & \texttt{OptimizationBridge}: QUBO$\leftrightarrow$solver interface (with circuit info) \\
+\texttt{event\_queue.py} & Priority-based discrete-event queue \\
+\texttt{traffic\_models.py} & Poisson, video, IoT traffic generators \\
+\texttt{mobility\_models.py} & Pedestrian, RWP, vehicular mobility \\
+\midrule
+
+\multicolumn{2}{l}{\textbf{telequm/telecom/}} \\
+\texttt{resource\_allocation.py} & 3GPP-compliant resource allocation \\
+\texttt{beamforming.py} & Beamforming vector computation \\
+\texttt{network\_optimization.py} & Network-level optimization utilities \\
+\midrule
+
+\multicolumn{2}{l}{\textbf{telequm/bridges/}} \\
+\texttt{matlab\_bridge.py} & MATLAB Engine integration \\
+\texttt{ns3\_bridge.py} & ns-3 socket integration \\
+\midrule
+
+\multicolumn{2}{l}{\textbf{dashboard/}} \\
+\texttt{app.py} & Streamlit main entry point \\
+\texttt{components/use\_case\_lab.py} & Single-shot QUBO experiment tab \\
+\texttt{components/digital\_twin.py} & Time-series simulation tab \\
+\texttt{components/education\_hub.py} & 8-subtab learning platform \\
+\texttt{components/hardware\_hub.py} & Hardware management tab \\
+\texttt{utils/resource\_monitor.py} & Resource tracking + HW benchmark \\
+\texttt{utils/snapshot\_manager.py} & Problem factory + isolated env copies \\
+\texttt{utils/scenario\_loader.py} & YAML/slider config builder \\
+\texttt{utils/plot\_helpers.py} & Plotly chart functions \\
+\midrule
+
+\multicolumn{2}{l}{\textbf{Other}} \\
+\texttt{experiments/metrics.py} & Experiment metrics collection \\
+\texttt{experiments/visualize.py} & Experiment visualization \\
+\texttt{benchmarks/topologies.py} & Standardized test topologies \\
+\texttt{run\_experiment.py} & CLI experiment runner \\
+\texttt{run\_benchmarks.py} & CLI benchmark runner \\
+\texttt{tests/test\_simulator.py} & pytest test suite \\
+\bottomrule
+\end{longtable}
+
+
+%% =================================================================
+\section{Running the Platform}
+%% =================================================================
+
+\subsection{Installation}
+
+\begin{lstlisting}[language=bash]
+cd notebooks/
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+\end{lstlisting}
+
+\subsection{Launch Dashboard}
+
+\begin{lstlisting}[language=bash]
+cd notebooks/
+streamlit run dashboard/app.py
+\end{lstlisting}
+
+\subsection{Run Experiments (CLI)}
+
+\begin{lstlisting}[language=bash]
+python run_experiment.py --config experiments/configs/default.yaml
+python run_benchmarks.py --output results/
+\end{lstlisting}
+
+\subsection{Run Tests}
+
+\begin{lstlisting}[language=bash]
+pytest tests/ -v --cov=telequm
+\end{lstlisting}
+
+
+\end{document}

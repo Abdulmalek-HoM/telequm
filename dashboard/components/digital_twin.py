@@ -7,7 +7,8 @@ DIFFERENT from Use-Case Lab:
 - Digital Twin = time-series simulation with live metrics evolution
 
 Shows: topology, coverage map, throughput/SINR over time,
-allocation heatmaps, and per-timestep exploration.
+allocation heatmaps, per-timestep exploration, and quantum
+circuit execution details when quantum solver is enabled.
 """
 
 from __future__ import annotations
@@ -18,10 +19,14 @@ import numpy as np
 import streamlit as st
 
 from dashboard.utils.scenario_loader import build_config_from_sliders
-from dashboard.utils.snapshot_manager import run_scenario
+from dashboard.utils.snapshot_manager import run_scenario, run_problem_direct
 from dashboard.utils.plot_helpers import (
     plot_network_topology, plot_sinr_heatmap, plot_throughput_series,
     plot_fairness_sinr, plot_allocation_matrix, PALETTE,
+)
+from dashboard.utils.resource_monitor import (
+    track_resources, estimate_qaoa_resources,
+    estimate_classical_resources,
 )
 
 try:
@@ -29,6 +34,17 @@ try:
     HAS_PLOTLY = True
 except ImportError:
     HAS_PLOTLY = False
+
+
+PROBLEM_TYPES = {
+    "📡 PRB Allocation": "prb_allocation",
+    "🔀 Routing Optimization": "routing",
+    "📶 Beam Selection": "beam_selection",
+    "⚡ Energy Efficiency": "energy_efficiency",
+    "🔄 Handover Optimization": "handover",
+    "🏗️ BS Placement": "bs_placement",
+    "🌐 Quantum Network Routing": "quantum_routing",
+}
 
 
 def render():
@@ -52,6 +68,13 @@ def render():
         seed = st.number_input("Seed", 0, 9999, 42, key="dt_seed")
 
         st.divider()
+        st.subheader("📋 Problem")
+        problem_label = st.selectbox(
+            "Telecom Problem", list(PROBLEM_TYPES.keys()), key="dt_problem"
+        )
+        problem_type = PROBLEM_TYPES[problem_label]
+
+        st.divider()
         st.subheader("⏱️ Simulation")
         timesteps = st.slider("Timesteps", 10, 200, 50, key="dt_ts")
         traffic = st.selectbox("Traffic", ["poisson", "video", "iot"], key="dt_traffic")
@@ -60,8 +83,26 @@ def render():
 
         st.divider()
         st.subheader("🔧 Solver")
-        solver = st.selectbox("Classical Method", ["greedy", "simulated_annealing"], key="dt_solver")
+        solver = st.selectbox("Classical Method",
+                              ["greedy", "simulated_annealing", "exact"],
+                              key="dt_solver")
         opt_interval = st.slider("Optimize every N steps", 5, 50, 10, key="dt_opt_int")
+
+        st.divider()
+        st.subheader("⚛️ Quantum")
+        run_quantum = st.toggle("Compare with Quantum (QAOA)", value=False, key="dt_quantum")
+        if run_quantum:
+            max_q = st.slider("Max quantum variables", 4, 100, 20, key="dt_max_q")
+            if max_q > 50:
+                st.warning(
+                    "🔴 **>50 qubits** — Requires **multi-CPU/GPU**. "
+                    "RAM: ~{:.0f} GB.".format(2**max_q * 16 / (1024**3))
+                )
+            elif max_q > 30:
+                st.info(
+                    "🟡 **>30 qubits** — Slow on single CPU. "
+                    "RAM: ~{:.2f} GB.".format(2**max_q * 16 / (1024**3))
+                )
 
     config = build_config_from_sliders(
         num_bs=num_bs, num_ue=num_ue,
@@ -74,22 +115,42 @@ def render():
 
     # ── Run ───────────────────────────────────────────────────────
     if st.button("▶️ Run Simulation", type="primary", use_container_width=True, key="dt_run"):
-        _run_twin(config)
+        _run_twin(config, problem_type, solver, run_quantum,
+                  max_q if run_quantum else 20)
 
 
-def _run_twin(config: dict):
+def _run_twin(config: dict, problem_type: str, solver_method: str,
+              run_quantum: bool, max_q: int):
     """Execute scenario and render digital twin views."""
-    progress = st.progress(0, text="Initializing...")
+    progress = st.progress(0, text="Initializing simulation...")
 
-    t0 = time.time()
-    results = run_scenario(config, verbose=False)
-    runtime = time.time() - t0
+    # ── 1. Run time-series simulation ────────────────────────────
+    with track_resources() as res_report:
+        t0 = time.time()
+        results = run_scenario(config, verbose=False)
+        sim_runtime = time.time() - t0
 
-    progress.progress(100, text=f"✅ Done in {runtime:.2f}s")
+    progress.progress(50, text="Simulation done. Running QUBO comparison...")
 
     metrics = results["metrics"]
     env_final = results.get("environment_final", {})
     classical = results.get("classical_solutions", [])
+
+    # ── 2. Run problem-specific QUBO solve on final state ────────
+    qubo_config = config.copy()
+    if run_quantum:
+        qubo_config.setdefault("solver", {})["max_quantum_vars"] = max_q
+
+    qubo_results = None
+    try:
+        qubo_results = run_problem_direct(
+            qubo_config, problem_type=problem_type,
+            solver_method=solver_method, run_quantum=run_quantum,
+        )
+    except Exception as e:
+        st.warning(f"QUBO solve failed: {e}")
+
+    progress.progress(100, text=f"✅ Complete in {sim_runtime:.2f}s")
 
     # ── KPI Banner ───────────────────────────────────────────────
     if metrics:
@@ -160,6 +221,118 @@ def _run_twin(config: dict):
             fig.update_xaxes(gridcolor=PALETTE["grid"])
             fig.update_yaxes(gridcolor=PALETTE["grid"])
             st.plotly_chart(fig, use_container_width=True)
+
+    # ── QUBO Results & Quantum Details ───────────────────────────
+    if qubo_results:
+        st.subheader(f"📊 QUBO Solve — {problem_type.replace('_', ' ').title()}")
+
+        c_res = qubo_results["classical_result"]
+        q_res = qubo_results.get("quantum_result")
+        c_met = qubo_results.get("classical_metrics") or {}
+        q_met = qubo_results.get("quantum_metrics") or {}
+
+        kc1, kc2, kc3 = st.columns(3)
+        kc1.metric("Classical Cost", f"{c_res.get('cost', 'N/A')}")
+        kc2.metric("Solver", c_res.get("method", solver_method).replace("_", " ").title())
+        kc3.metric("QUBO Vars", qubo_results["num_vars"])
+
+        # ── Quantum result section ────────────────────────────────
+        if q_res is None:
+            st.info("Quantum not enabled. Toggle ⚛️ in sidebar to compare.")
+        elif "error" in q_res:
+            st.warning(f"**Quantum:** {q_res['error']}")
+        else:
+            st.subheader("⚛️ Quantum Result")
+            qc1, qc2, qc3 = st.columns(3)
+            qc1.metric("Q Cost", f"{q_res.get('cost', 'N/A')}")
+            qc2.metric("Method", q_res.get("method", "QAOA").replace("_", " ").title())
+            qc3.metric("Runtime", f"{q_res.get('runtime_s', 0) * 1000:.1f} ms")
+
+            if c_res.get("cost") and q_res.get("cost"):
+                c_cost, q_cost = float(c_res["cost"]), float(q_res["cost"])
+                if c_cost != 0:
+                    imp = (c_cost - q_cost) / abs(c_cost) * 100
+                    st.metric("⚡ Quantum vs Classical", f"{imp:+.1f}%",
+                              delta="Better" if imp > 0 else "Worse")
+
+            # ── 🔬 Circuit Execution ──────────────────────────────
+            st.subheader("🔬 Quantum Circuit Execution")
+
+            cs1, cs2, cs3, cs4 = st.columns(4)
+            cs1.metric("🔲 Qubits", q_res.get("num_qubits", "?"))
+            cs2.metric("📏 Depth", q_res.get("circuit_depth", "?"))
+            cs3.metric("🧩 Gates", q_res.get("gate_count", "?"))
+            cs4.metric("🎯 Shots", q_res.get("shots", 1024))
+
+            circuit_text = q_res.get("circuit_text", "")
+            if circuit_text:
+                with st.expander("📐 Circuit Diagram", expanded=True):
+                    st.code(circuit_text, language=None)
+
+            opt_params = q_res.get("optimal_params")
+            if opt_params:
+                with st.expander("🎛️ Optimal Parameters"):
+                    p = len(opt_params) // 2
+                    gamma = opt_params[:p]
+                    beta = opt_params[p:]
+                    rows = ""
+                    for i in range(p):
+                        rows += f"| Layer {i+1} | {gamma[i]:.6f} | {beta[i]:.6f} |\n"
+                    st.markdown(f"""
+| Layer | γ (cost) | β (mixer) |
+|-------|----------|-----------|
+{rows}
+                    """)
+
+            conv = q_res.get("convergence_info", {})
+            if conv:
+                with st.expander("📊 Convergence Info"):
+                    ci1, ci2, ci3 = st.columns(3)
+                    ci1.metric("Func Evals", conv.get("nfev", "?"))
+                    ci2.metric("Converged", "✅" if conv.get("success") else "❌")
+                    ci3.metric("Final Cost", f"{conv.get('final_cost', 0):.4f}")
+
+            history = q_res.get("optimization_history", [])
+            if history and HAS_PLOTLY:
+                with st.expander("📈 Convergence Plot", expanded=True):
+                    fig = go.Figure()
+                    fig.add_trace(go.Scatter(
+                        x=list(range(len(history))), y=history,
+                        mode="lines+markers",
+                        line=dict(color=PALETTE["primary"], width=2),
+                        marker=dict(size=4), name="Cost",
+                    ))
+                    fig.update_layout(
+                        title="QAOA Optimization Convergence",
+                        xaxis_title="Iteration", yaxis_title="Cost",
+                        plot_bgcolor=PALETTE["bg"], paper_bgcolor=PALETTE["card"],
+                        font=dict(color=PALETTE["text"]), height=300,
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+
+            counts = q_res.get("measurement_counts", {})
+            if counts and HAS_PLOTLY:
+                with st.expander("🎲 Measurement Distribution (Top 15)"):
+                    top = sorted(counts.items(), key=lambda x: -x[1])[:15]
+                    fig = go.Figure(data=[go.Bar(
+                        x=[c[0] for c in top], y=[c[1] for c in top],
+                        marker_color=PALETTE["primary"],
+                    )])
+                    fig.update_layout(
+                        title="Top Bitstrings", xaxis_title="Bitstring",
+                        yaxis_title="Count",
+                        plot_bgcolor=PALETTE["bg"], paper_bgcolor=PALETTE["card"],
+                        font=dict(color=PALETTE["text"]), height=300,
+                        xaxis=dict(tickangle=45),
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+
+    # ── 🖥️ Resource Usage ────────────────────────────────────────
+    st.subheader("🖥️ Compute Resources")
+    r1, r2, r3 = st.columns(3)
+    r1.metric("⏱️ Total Time", f"{res_report.wall_time_s:.2f}s")
+    r2.metric("🧠 Peak RAM", f"{res_report.peak_ram_mb:.2f} MB")
+    r3.metric("🔧 CPU Time", f"{res_report.cpu_time_s:.3f}s")
 
     # ── Timestep Explorer ────────────────────────────────────────
     if metrics:
