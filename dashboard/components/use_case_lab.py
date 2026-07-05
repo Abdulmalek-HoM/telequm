@@ -60,8 +60,109 @@ SOLVER_METHODS = {
 def render():
     """Render the Use-Case Lab tab."""
     st.header("🧪 Use-Case Lab")
-    st.caption("Select a problem, choose a solver, and compare classical vs quantum solutions")
+    st.caption("Interactive experimentation across Quantum Optimization and Post-Quantum Cryptography")
 
+    lab_mode = st.radio(
+        "Select Experiment Domain",
+        ["📡 Network Optimization Lab (QAOA/VQE)", "🛡️ Quantum-Safe Protocol & Crypto-Agility Lab"],
+        horizontal=True,
+        key="lab_domain_sel",
+    )
+    st.divider()
+
+    if lab_mode == "📡 Network Optimization Lab (QAOA/VQE)":
+        _render_optimization_lab()
+    else:
+        _render_pqc_protocol_lab()
+
+
+def _render_pqc_protocol_lab():
+    from telequm.pqc.protocols import ProtocolSimulator, NETWORK_LINKS
+    from dashboard.utils.plot_helpers import (
+        plot_protocol_handshake_sequence,
+        plot_packet_fragmentation,
+    )
+
+    st.subheader("🛡️ Quantum-Safe Protocol & Crypto-Agility Lab")
+    st.markdown("""
+    Simulate real-world telecommunications cryptographic handshakes across different network links (5G RAN, Optical Backhaul, Satellite LEO, Core Mesh). Analyze packet expansion, MTU fragmentation, transmission latency, and CPU processing overhead when migrating from classical ECC/RSA to NIST FIPS 203/204 PQC algorithms!
+    """)
+
+    # ── 1. Protocol & Link Configuration ─────────────────────────
+    st.subheader("1️⃣ Protocol & Link Configuration")
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        proto_sel = st.selectbox("Protocol", ["TLS_1_3", "IPSec_IKEv2", "MACsec", "5G_AKA", "DNSSEC_BGP"], key="lab_pqc_proto")
+    with c2:
+        link_sel = st.selectbox("Telecom Link Type", ["5G_UMa_RAN", "Optical_Backhaul", "Satellite_LEO", "Core_Mesh"], key="lab_pqc_link")
+    with c3:
+        suite_sel = st.selectbox("Cryptographic Suite", ["Classical", "PQC_Pure", "Hybrid"], key="lab_pqc_suite")
+
+    # Link customizations
+    with st.expander("⚙️ Customize Link Parameters (MTU, Latency, Loss)"):
+        default_link = NETWORK_LINKS.get(link_sel, {})
+        l1, l2, l3 = st.columns(3)
+        with l1:
+            mtu_val = st.number_input("Link MTU (Bytes)", min_value=500, max_value=9000, value=default_link.get("mtu_bytes", 1500), step=100, key="lab_pqc_mtu")
+        with l2:
+            lat_val = st.number_input("Base One-Way Latency (ms)", min_value=0.1, max_value=1000.0, value=default_link.get("latency_ms", 10.0), step=1.0, key="lab_pqc_lat")
+        with l3:
+            loss_val = st.slider("Packet Loss (%)", min_value=0.0, max_value=10.0, value=default_link.get("packet_loss", 0.0) * 100, step=0.1, key="lab_pqc_loss")
+
+    # ── 2. Run Simulation ────────────────────────────────────────
+    st.subheader("2️⃣ Handshake Simulation Results")
+    res = ProtocolSimulator.simulate_handshake(proto_sel, link_sel, suite_sel)
+    
+    if mtu_val != default_link.get("mtu_bytes", 1500) or lat_val != default_link.get("latency_ms", 10.0):
+        st.caption(f"Note: Using custom MTU {mtu_val} B and latency {lat_val} ms.")
+        res.mtu_exceeded = res.max_fragment_size > mtu_val
+        res.fragmentation_count = int(np.ceil(res.max_fragment_size / mtu_val)) if res.mtu_exceeded else 1
+
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Total Latency", f"{res.total_latency_ms:.2f} ms")
+    m2.metric("Total Handshake Bytes", f"{res.total_bytes:,} B")
+    m3.metric("Max Fragment / MTU", f"{res.max_fragment_size:,} / {mtu_val} B", delta="MTU Exceeded!" if res.mtu_exceeded else "No Fragmentation", delta_color="inverse" if res.mtu_exceeded else "normal")
+    m4.metric("Crypto CPU Processing", f"{res.cpu_processing_ms:.2f} ms")
+
+    if HAS_PLOTLY:
+        st.plotly_chart(plot_protocol_handshake_sequence(res.steps, f"{proto_sel} Handshake Step-by-Step Latency Breakdown"), use_container_width=True)
+
+    # ── 3. Comparative Suite Benchmarking ────────────────────────
+    st.subheader("3️⃣ Suite Benchmarking Comparison")
+    st.markdown(f"Comparing all cryptographic suites for **{proto_sel}** over **{link_sel}**:")
+
+    suites_dict = {
+        "Classical": ProtocolSimulator.simulate_handshake(proto_sel, link_sel, "Classical").to_dict(),
+        "PQC_Pure": ProtocolSimulator.simulate_handshake(proto_sel, link_sel, "PQC_Pure").to_dict(),
+        "Hybrid": ProtocolSimulator.simulate_handshake(proto_sel, link_sel, "Hybrid").to_dict(),
+    }
+
+    if HAS_PLOTLY:
+        st.plotly_chart(plot_packet_fragmentation(suites_dict, mtu_bytes=mtu_val), use_container_width=True)
+
+    header = "| Cryptographic Suite | Total Bytes | Max Fragment | Fragmentation | Latency (ms) | CPU Time (ms) | Quantum Safe? |\n"
+    header += "|---------------------|-------------|--------------|---------------|--------------|---------------|---------------|\n"
+    rows = ""
+    for s_name, s_data in suites_dict.items():
+        q_safe = "❌ No" if s_name == "Classical" else ("✅ Yes (Dual)" if s_name == "Hybrid" else "✅ Yes (Pure)")
+        frag_str = f"⚠️ {s_data['fragmentation_count']} pkts" if s_data["mtu_exceeded"] else "1 pkt"
+        rows += f"| **{s_name}** | {s_data['total_handshake_bytes']:,} B | {s_data['max_fragment_size']:,} B | {frag_str} | {s_data['total_latency_ms']:.2f} ms | {s_data['cpu_processing_ms']:.2f} ms | {q_safe} |\n"
+    st.markdown(header + rows)
+
+    csv_data = "Suite,TotalBytes,MaxFragment,FragmentationCount,LatencyMS,CPUProcessingMS\n"
+    for s_name, s_data in suites_dict.items():
+        csv_data += f"{s_name},{s_data['total_handshake_bytes']},{s_data['max_fragment_size']},{s_data['fragmentation_count']},{s_data['total_latency_ms']:.2f},{s_data['cpu_processing_ms']:.2f}\n"
+    
+    st.download_button(
+        label="📥 Download Protocol Benchmark CSV Report",
+        data=csv_data,
+        file_name=f"{proto_sel}_{link_sel}_pqc_benchmark.csv",
+        mime="text/csv",
+    )
+
+
+def _render_optimization_lab():
+    """Render the classical/quantum optimization lab."""
     # ── 1. Network Setup ─────────────────────────────────────────
     st.subheader("1️⃣ Network Configuration")
     config = _network_config()

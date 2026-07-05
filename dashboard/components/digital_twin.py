@@ -50,8 +50,135 @@ PROBLEM_TYPES = {
 def render():
     """Render the Digital Twin tab."""
     st.header("🌐 Digital Twin — Live Simulation")
-    st.caption("Run a full time-series simulation and visualise network evolution")
+    st.caption("Time-series simulation across network optimization and quantum-safe migration")
 
+    twin_mode = st.radio(
+        "Select Digital Twin Domain",
+        ["📡 Live Network Optimization Twin (Timestep Evolution)", "🛡️ Quantum-Safe Migration & HNDL Risk Twin"],
+        horizontal=True,
+        key="twin_domain_sel",
+    )
+    st.divider()
+
+    if twin_mode == "📡 Live Network Optimization Twin (Timestep Evolution)":
+        _render_optimization_twin()
+    else:
+        _render_pqc_migration_twin()
+
+
+def _render_pqc_migration_twin():
+    from telequm.pqc.threat_models import HNDLCalculator
+    from telequm.pqc.migration import MaturityLadder, MigrationExecutionChain
+
+    st.subheader("🛡️ Quantum-Safe Network Migration & HNDL Risk Twin")
+    st.markdown("""
+    Simulate a 10-year transition timeline (2025–2035) for a national telecommunications operator migrating to Post-Quantum Cryptography (NIST FIPS 203/204). Track year-by-year PQC adoption percentage, cumulative data volume exposed to Harvest Now, Decrypt Later (HNDL) interception, and operational maturity progression!
+    """)
+
+    # ── Sidebar / Top Controls ───────────────────────────────────
+    st.subheader("1️⃣ Operator & Migration Strategy Configuration")
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        n_bs = st.number_input("Total RAN Base Stations (5G DUs/CUs)", 100, 100000, 5000, step=500, key="dt_pqc_bs")
+        n_core = st.number_input("Core Network Signaling Nodes", 10, 1000, 50, step=10, key="dt_pqc_core")
+    with c2:
+        pace = st.selectbox("Migration Rollout Strategy", ["Aggressive (4-5 Years)", "Balanced (7-8 Years)", "Lagging / Reactive (10+ Years)"], index=1, key="dt_pqc_pace")
+        start_year = st.number_input("PQC Deployment Start Year", 2024, 2030, 2025, key="dt_pqc_start")
+    with c3:
+        q_horizon = st.slider("Quantum Horizon Z (CRQC Arrival Year)", 2028, 2040, 2033, key="dt_pqc_horizon")
+        daily_tb = st.slider("Sensitive Traffic (TB / Day)", 10, 1000, 150, key="dt_pqc_tb")
+
+    # ── Run 10-Year Simulation ───────────────────────────────────
+    years = np.arange(2025, 2036)
+    n_years = len(years)
+    
+    if "Aggressive" in pace:
+        mig_duration = 5
+    elif "Balanced" in pace:
+        mig_duration = 7
+    else:
+        mig_duration = 10
+
+    pqc_pct = []
+    hndl_exposed_tb = []
+    cum_hndl_pb = 0.0
+    maturity_levels = []
+    
+    for y in years:
+        if y < start_year:
+            pct = 0.0
+        else:
+            elapsed = y - start_year + 1
+            pct = min(100.0, (elapsed / mig_duration) * 100.0)
+        pqc_pct.append(pct)
+        
+        if y < q_horizon:
+            unprotected_pct = max(0.0, 100.0 - pct)
+            exposed_tb_year = (unprotected_pct / 100.0) * daily_tb * 365
+        else:
+            unprotected_pct = max(0.0, 100.0 - pct)
+            exposed_tb_year = (unprotected_pct / 100.0) * daily_tb * 365 * 2
+            
+        hndl_exposed_tb.append(exposed_tb_year)
+        cum_hndl_pb += exposed_tb_year / 1000.0
+        
+        if pct == 0:
+            mat = 0
+        elif pct < 25:
+            mat = 1
+        elif pct < 60:
+            mat = 2
+        elif pct < 90:
+            mat = 3
+        else:
+            mat = 4
+        maturity_levels.append(mat)
+
+    st.subheader("2️⃣ 10-Year Migration Simulation Results (2025–2035)")
+    
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Final PQC Adoption (2035)", f"{pqc_pct[-1]:.0f}%")
+    m2.metric("Total HNDL Harvested Data", f"{cum_hndl_pb:.2f} PB", delta="Critical Risk!" if cum_hndl_pb > 10 else "Controlled", delta_color="inverse" if cum_hndl_pb > 10 else "normal")
+    m3.metric("CRQC Threat Year", f"{q_horizon}")
+    m4.metric("2035 Operational Maturity", f"Level {maturity_levels[-1]}")
+
+    if HAS_PLOTLY:
+        st.subheader("📈 PQC Rollout Trajectory & HNDL Vulnerability Window")
+        from plotly.subplots import make_subplots
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+        
+        fig.add_trace(go.Scatter(x=years, y=pqc_pct, name="PQC Adoption (%)", line=dict(color=PALETTE["primary"], width=3)), secondary_y=False)
+        fig.add_trace(go.Bar(name="Annual HNDL Harvested Data (TB)", x=years, y=hndl_exposed_tb, marker_color=PALETTE["danger"], opacity=0.6), secondary_y=True)
+        
+        fig.add_vline(x=q_horizon, line_width=2, line_dash="dash", line_color=PALETTE["warning"], annotation_text="CRQC Arrival (Shor's Threshold)")
+        
+        fig.update_layout(
+            plot_bgcolor=PALETTE["bg"],
+            paper_bgcolor=PALETTE["card"],
+            font=dict(color=PALETTE["text"]),
+            legend=dict(bgcolor=PALETTE["card"], orientation="h", y=1.1),
+            height=450,
+            xaxis_title="Year",
+        )
+        fig.update_yaxes(title_text="PQC Adoption (%)", range=[0, 105], secondary_y=False)
+        fig.update_yaxes(title_text="Harvested Data Volume (TB / Year)", secondary_y=True)
+        
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.subheader("📋 Year-by-Year Operator Migration Audit Table")
+    import pandas as pd
+    df_audit = pd.DataFrame({
+        "Year": years,
+        "PQC Adoption (%)": [f"{p:.1f}%" for p in pqc_pct],
+        "AQC Maturity Level": [f"Level {m}" for m in maturity_levels],
+        "Annual Harvested Data (TB)": [f"{v:,.1f} TB" for v in hndl_exposed_tb],
+        "Status": ["🟢 Safe / Agility Prep" if y < q_horizon and p > 80 else ("🟡 Vulnerable Window" if y < q_horizon else ("🚨 CRQC COMPROMISE" if p < 100 else "🟢 Quantum Safe")) for y, p in zip(years, pqc_pct)],
+    })
+    st.dataframe(df_audit, use_container_width=True, hide_index=True)
+
+
+def _render_optimization_twin():
+    """Render the Digital Twin tab for network optimization."""
     st.markdown("""
     > **How is this different from Use-Case Lab?**
     >

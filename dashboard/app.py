@@ -25,7 +25,7 @@ sys.path.insert(0, str(ROOT))
 # ─── Page Config ─────────────────────────────────────────────────
 
 st.set_page_config(
-    page_title="TELEQUM v2.1 — Quantum-Telecom Digital Twin",
+    page_title="TELEQUM v3.0 — Quantum-Safe Telecom & 6G Digital Twin",
     page_icon="🔬",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -89,7 +89,7 @@ with st.sidebar:
     st.markdown("""
     <div class="sidebar-brand">
         <h2>🔬 TELEQUM</h2>
-        <p>v2.1 — Quantum-Telecom Digital Twin</p>
+        <p>v3.0 — Quantum-Safe Telecom & 6G</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -102,7 +102,7 @@ with st.sidebar:
 
     st.divider()
     st.caption("© 2026 Abdulmalek Baitulmal")
-    st.caption("TELEQUM — Applied Quantum for Telecom")
+    st.caption("TELEQUM — Post-Quantum & 6G Networks")
 
 # ─── Gradient Bar ────────────────────────────────────────────────
 
