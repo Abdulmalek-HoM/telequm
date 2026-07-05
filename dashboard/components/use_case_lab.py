@@ -17,19 +17,27 @@ import time
 import numpy as np
 import streamlit as st
 
-from dashboard.utils.scenario_loader import (
-    list_presets, load_preset, parse_uploaded_yaml, build_config_from_sliders,
-)
-from dashboard.utils.snapshot_manager import run_problem_direct, run_scenario
 from dashboard.utils.plot_helpers import (
-    plot_network_topology, plot_sinr_heatmap, plot_throughput_series,
-    plot_fairness_sinr, plot_solver_comparison, plot_allocation_matrix,
-    metrics_to_csv, PALETTE,
+    PALETTE,
+    metrics_to_csv,
+    plot_allocation_matrix,
+    plot_fairness_sinr,
+    plot_network_topology,
+    plot_sinr_heatmap,
+    plot_throughput_series,
 )
 from dashboard.utils.resource_monitor import (
-    track_resources, estimate_qaoa_resources, estimate_vqe_resources,
-    estimate_classical_resources, estimate_statevector_ram,
+    estimate_classical_resources,
+    estimate_qaoa_resources,
+    track_resources,
 )
+from dashboard.utils.scenario_loader import (
+    build_config_from_sliders,
+    list_presets,
+    load_preset,
+    parse_uploaded_yaml,
+)
+from dashboard.utils.snapshot_manager import run_problem_direct, run_scenario
 
 try:
     import plotly.graph_objects as go
@@ -77,11 +85,11 @@ def render():
 
 
 def _render_pqc_protocol_lab():
-    from telequm.pqc.protocols import ProtocolSimulator, NETWORK_LINKS
     from dashboard.utils.plot_helpers import (
-        plot_protocol_handshake_sequence,
         plot_packet_fragmentation,
+        plot_protocol_handshake_sequence,
     )
+    from telequm.pqc.protocols import NETWORK_LINKS, ProtocolSimulator
 
     st.subheader("🛡️ Quantum-Safe Protocol & Crypto-Agility Lab")
     st.markdown("""
@@ -107,12 +115,12 @@ def _render_pqc_protocol_lab():
         with l2:
             lat_val = st.number_input("Base One-Way Latency (ms)", min_value=0.1, max_value=1000.0, value=default_link.get("latency_ms", 10.0), step=1.0, key="lab_pqc_lat")
         with l3:
-            loss_val = st.slider("Packet Loss (%)", min_value=0.0, max_value=10.0, value=default_link.get("packet_loss", 0.0) * 100, step=0.1, key="lab_pqc_loss")
+            st.slider("Packet Loss (%)", min_value=0.0, max_value=10.0, value=default_link.get("packet_loss", 0.0) * 100, step=0.1, key="lab_pqc_loss")
 
     # ── 2. Run Simulation ────────────────────────────────────────
     st.subheader("2️⃣ Handshake Simulation Results")
     res = ProtocolSimulator.simulate_handshake(proto_sel, link_sel, suite_sel)
-    
+
     if mtu_val != default_link.get("mtu_bytes", 1500) or lat_val != default_link.get("latency_ms", 10.0):
         st.caption(f"Note: Using custom MTU {mtu_val} B and latency {lat_val} ms.")
         res.mtu_exceeded = res.max_fragment_size > mtu_val
@@ -152,7 +160,7 @@ def _render_pqc_protocol_lab():
     csv_data = "Suite,TotalBytes,MaxFragment,FragmentationCount,LatencyMS,CPUProcessingMS\n"
     for s_name, s_data in suites_dict.items():
         csv_data += f"{s_name},{s_data['total_handshake_bytes']},{s_data['max_fragment_size']},{s_data['fragmentation_count']},{s_data['total_latency_ms']:.2f},{s_data['cpu_processing_ms']:.2f}\n"
-    
+
     st.download_button(
         label="📥 Download Protocol Benchmark CSV Report",
         data=csv_data,
@@ -196,16 +204,12 @@ def _render_optimization_lab():
             if max_q > 50:
                 st.warning(
                     "🔴 **>50 qubits** — Statevector simulation requires **multi-CPU or GPU** "
-                    "architecture. RAM: ~{:.0f} GB. Expect long runtimes on standard hardware.".format(
-                        2**max_q * 16 / (1024**3)
-                    )
+                    f"architecture. RAM: ~{2**max_q * 16 / (1024**3):.0f} GB. Expect long runtimes on standard hardware."
                 )
             elif max_q > 30:
                 st.info(
                     "🟡 **>30 qubits** — Simulation will be slow on a single CPU. "
-                    "RAM estimate: ~{:.2f} GB statevector.".format(
-                        2**max_q * 16 / (1024**3)
-                    )
+                    f"RAM estimate: ~{2**max_q * 16 / (1024**3):.2f} GB statevector."
                 )
             if var_est > max_q:
                 st.warning(f"⚠️ Problem has **{var_est}** vars but quantum limit is **{max_q}**. "
@@ -495,15 +499,15 @@ def _run_single_shot(config: dict, problem_type: str, solver_method: str, run_qu
                 fig.add_trace(go.Scatter(
                     x=list(range(len(history))), y=history,
                     mode="lines+markers",
-                    line=dict(color=PALETTE["primary"], width=2),
-                    marker=dict(size=4),
+                    line={"color": PALETTE["primary"], "width": 2},
+                    marker={"size": 4},
                     name="Cost per Iteration",
                 ))
                 fig.update_layout(
                     title="QAOA/VQE Optimization Convergence",
                     xaxis_title="Iteration", yaxis_title="Expectation Value",
                     plot_bgcolor=PALETTE["bg"], paper_bgcolor=PALETTE["card"],
-                    font=dict(color=PALETTE["text"]), height=350,
+                    font={"color": PALETTE["text"]}, height=350,
                 )
                 fig.update_xaxes(gridcolor=PALETTE["grid"])
                 fig.update_yaxes(gridcolor=PALETTE["grid"])
@@ -524,8 +528,8 @@ def _run_single_shot(config: dict, problem_type: str, solver_method: str, run_qu
                     title="Measurement Counts (Top Bitstrings)",
                     xaxis_title="Bitstring", yaxis_title="Count",
                     plot_bgcolor=PALETTE["bg"], paper_bgcolor=PALETTE["card"],
-                    font=dict(color=PALETTE["text"]), height=350,
-                    xaxis=dict(tickangle=45),
+                    font={"color": PALETTE["text"]}, height=350,
+                    xaxis={"tickangle": 45},
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
@@ -636,14 +640,14 @@ def _run_full_simulation(config: dict, problem_type: str, solver_method: str):
         fig = go.Figure()
         fig.add_trace(go.Scatter(
             x=times, y=costs, mode="lines+markers",
-            line=dict(color=PALETTE["primary"], width=2),
-            marker=dict(size=6), name="Classical Cost",
+            line={"color": PALETTE["primary"], "width": 2},
+            marker={"size": 6}, name="Classical Cost",
         ))
         fig.update_layout(
             title="QUBO Cost at Optimization Steps",
             xaxis_title="Timestep", yaxis_title="Cost",
             plot_bgcolor=PALETTE["bg"], paper_bgcolor=PALETTE["card"],
-            font=dict(color=PALETTE["text"]), height=350,
+            font={"color": PALETTE["text"]}, height=350,
         )
         fig.update_xaxes(gridcolor=PALETTE["grid"])
         fig.update_yaxes(gridcolor=PALETTE["grid"])

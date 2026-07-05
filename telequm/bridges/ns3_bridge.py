@@ -24,16 +24,13 @@ is provided for development and testing.
 from __future__ import annotations
 
 import csv
-import io
 import json
 import logging
 import socket
-from pathlib import Path
-from typing import Dict, List, Optional
 
 import numpy as np
 
-from telequm.core.network_snapshot import UniversalNetworkSnapshot, CellInfo, UserInfo
+from telequm.core.network_snapshot import CellInfo, UniversalNetworkSnapshot, UserInfo
 
 logger = logging.getLogger("telequm.bridges.ns3")
 
@@ -53,7 +50,7 @@ class NS3Bridge:
     def __init__(self, host: str = "localhost", port: int = 5555):
         self.host = host
         self.port = port
-        self._socket: Optional[socket.socket] = None
+        self._socket: socket.socket | None = None
 
     # ── Socket Mode ──────────────────────────────────────────────
 
@@ -76,7 +73,7 @@ class NS3Bridge:
             self._socket.close()
             self._socket = None
 
-    def ingest_trace(self, buffer_size: int = 65536) -> Optional[dict]:
+    def ingest_trace(self, buffer_size: int = 65536) -> dict | None:
         """
         Receive a single trace snapshot from ns-3 via socket.
 
@@ -94,7 +91,7 @@ class NS3Bridge:
             logger.error("Trace ingestion failed: %s", e)
             return None
 
-    def ingest_to_snapshot(self) -> Optional[UniversalNetworkSnapshot]:
+    def ingest_to_snapshot(self) -> UniversalNetworkSnapshot | None:
         """
         Receive trace and convert to UniversalNetworkSnapshot.
 
@@ -110,7 +107,7 @@ class NS3Bridge:
     # ── File Mode ────────────────────────────────────────────────
 
     @staticmethod
-    def load_pdcp_trace(path: str) -> List[dict]:
+    def load_pdcp_trace(path: str) -> list[dict]:
         """
         Load PDCP E2E trace CSV from ns-3.
 
@@ -130,7 +127,7 @@ class NS3Bridge:
         return records
 
     @staticmethod
-    def load_mac_sched_trace(path: str) -> List[dict]:
+    def load_mac_sched_trace(path: str) -> list[dict]:
         """
         Load DL MAC Scheduler trace from ns-3.
 
@@ -200,8 +197,8 @@ class NS3Bridge:
 
     @staticmethod
     def traces_to_snapshot(
-        pdcp_records: List[dict],
-        mac_records: List[dict],
+        pdcp_records: list[dict],
+        mac_records: list[dict],
         area_size: tuple = (1000.0, 1000.0),
     ) -> UniversalNetworkSnapshot:
         """
@@ -214,8 +211,8 @@ class NS3Bridge:
         rng = np.random.default_rng(42)
 
         # Discover cells and users from MAC trace
-        cell_ids = sorted(set(r["cell_id"] for r in mac_records))
-        user_rntis = sorted(set(r["rnti"] for r in mac_records))
+        cell_ids = sorted({r["cell_id"] for r in mac_records})
+        user_rntis = sorted({r["rnti"] for r in mac_records})
 
         for cid in cell_ids:
             snap.cells.append(CellInfo(

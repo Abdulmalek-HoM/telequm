@@ -18,16 +18,17 @@ import time
 import numpy as np
 import streamlit as st
 
-from dashboard.utils.scenario_loader import build_config_from_sliders
-from dashboard.utils.snapshot_manager import run_scenario, run_problem_direct
 from dashboard.utils.plot_helpers import (
-    plot_network_topology, plot_sinr_heatmap, plot_throughput_series,
-    plot_fairness_sinr, plot_allocation_matrix, PALETTE,
+    PALETTE,
+    plot_fairness_sinr,
+    plot_network_topology,
+    plot_throughput_series,
 )
 from dashboard.utils.resource_monitor import (
-    track_resources, estimate_qaoa_resources,
-    estimate_classical_resources,
+    track_resources,
 )
+from dashboard.utils.scenario_loader import build_config_from_sliders
+from dashboard.utils.snapshot_manager import run_problem_direct, run_scenario
 
 try:
     import plotly.graph_objects as go
@@ -67,8 +68,6 @@ def render():
 
 
 def _render_pqc_migration_twin():
-    from telequm.pqc.threat_models import HNDLCalculator
-    from telequm.pqc.migration import MaturityLadder, MigrationExecutionChain
 
     st.subheader("🛡️ Quantum-Safe Network Migration & HNDL Risk Twin")
     st.markdown("""
@@ -79,8 +78,8 @@ def _render_pqc_migration_twin():
     st.subheader("1️⃣ Operator & Migration Strategy Configuration")
     c1, c2, c3 = st.columns(3)
     with c1:
-        n_bs = st.number_input("Total RAN Base Stations (5G DUs/CUs)", 100, 100000, 5000, step=500, key="dt_pqc_bs")
-        n_core = st.number_input("Core Network Signaling Nodes", 10, 1000, 50, step=10, key="dt_pqc_core")
+        st.number_input("Total RAN Base Stations (5G DUs/CUs)", 100, 100000, 5000, step=500, key="dt_pqc_bs")
+        st.number_input("Core Network Signaling Nodes", 10, 1000, 50, step=10, key="dt_pqc_core")
     with c2:
         pace = st.selectbox("Migration Rollout Strategy", ["Aggressive (4-5 Years)", "Balanced (7-8 Years)", "Lagging / Reactive (10+ Years)"], index=1, key="dt_pqc_pace")
         start_year = st.number_input("PQC Deployment Start Year", 2024, 2030, 2025, key="dt_pqc_start")
@@ -90,8 +89,8 @@ def _render_pqc_migration_twin():
 
     # ── Run 10-Year Simulation ───────────────────────────────────
     years = np.arange(2025, 2036)
-    n_years = len(years)
-    
+    len(years)
+
     if "Aggressive" in pace:
         mig_duration = 5
     elif "Balanced" in pace:
@@ -103,7 +102,7 @@ def _render_pqc_migration_twin():
     hndl_exposed_tb = []
     cum_hndl_pb = 0.0
     maturity_levels = []
-    
+
     for y in years:
         if y < start_year:
             pct = 0.0
@@ -111,17 +110,17 @@ def _render_pqc_migration_twin():
             elapsed = y - start_year + 1
             pct = min(100.0, (elapsed / mig_duration) * 100.0)
         pqc_pct.append(pct)
-        
+
         if y < q_horizon:
             unprotected_pct = max(0.0, 100.0 - pct)
             exposed_tb_year = (unprotected_pct / 100.0) * daily_tb * 365
         else:
             unprotected_pct = max(0.0, 100.0 - pct)
             exposed_tb_year = (unprotected_pct / 100.0) * daily_tb * 365 * 2
-            
+
         hndl_exposed_tb.append(exposed_tb_year)
         cum_hndl_pb += exposed_tb_year / 1000.0
-        
+
         if pct == 0:
             mat = 0
         elif pct < 25:
@@ -135,7 +134,7 @@ def _render_pqc_migration_twin():
         maturity_levels.append(mat)
 
     st.subheader("2️⃣ 10-Year Migration Simulation Results (2025–2035)")
-    
+
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Final PQC Adoption (2035)", f"{pqc_pct[-1]:.0f}%")
     m2.metric("Total HNDL Harvested Data", f"{cum_hndl_pb:.2f} PB", delta="Critical Risk!" if cum_hndl_pb > 10 else "Controlled", delta_color="inverse" if cum_hndl_pb > 10 else "normal")
@@ -146,23 +145,23 @@ def _render_pqc_migration_twin():
         st.subheader("📈 PQC Rollout Trajectory & HNDL Vulnerability Window")
         from plotly.subplots import make_subplots
         fig = make_subplots(specs=[[{"secondary_y": True}]])
-        
-        fig.add_trace(go.Scatter(x=years, y=pqc_pct, name="PQC Adoption (%)", line=dict(color=PALETTE["primary"], width=3)), secondary_y=False)
+
+        fig.add_trace(go.Scatter(x=years, y=pqc_pct, name="PQC Adoption (%)", line={"color": PALETTE["primary"], "width": 3}), secondary_y=False)
         fig.add_trace(go.Bar(name="Annual HNDL Harvested Data (TB)", x=years, y=hndl_exposed_tb, marker_color=PALETTE["danger"], opacity=0.6), secondary_y=True)
-        
+
         fig.add_vline(x=q_horizon, line_width=2, line_dash="dash", line_color=PALETTE["warning"], annotation_text="CRQC Arrival (Shor's Threshold)")
-        
+
         fig.update_layout(
             plot_bgcolor=PALETTE["bg"],
             paper_bgcolor=PALETTE["card"],
-            font=dict(color=PALETTE["text"]),
-            legend=dict(bgcolor=PALETTE["card"], orientation="h", y=1.1),
+            font={"color": PALETTE["text"]},
+            legend={"bgcolor": PALETTE["card"], "orientation": "h", "y": 1.1},
             height=450,
             xaxis_title="Year",
         )
         fig.update_yaxes(title_text="PQC Adoption (%)", range=[0, 105], secondary_y=False)
         fig.update_yaxes(title_text="Harvested Data Volume (TB / Year)", secondary_y=True)
-        
+
         st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("📋 Year-by-Year Operator Migration Audit Table")
@@ -172,7 +171,7 @@ def _render_pqc_migration_twin():
         "PQC Adoption (%)": [f"{p:.1f}%" for p in pqc_pct],
         "AQC Maturity Level": [f"Level {m}" for m in maturity_levels],
         "Annual Harvested Data (TB)": [f"{v:,.1f} TB" for v in hndl_exposed_tb],
-        "Status": ["🟢 Safe / Agility Prep" if y < q_horizon and p > 80 else ("🟡 Vulnerable Window" if y < q_horizon else ("🚨 CRQC COMPROMISE" if p < 100 else "🟢 Quantum Safe")) for y, p in zip(years, pqc_pct)],
+        "Status": ["🟢 Safe / Agility Prep" if y < q_horizon and p > 80 else ("🟡 Vulnerable Window" if y < q_horizon else ("🚨 CRQC COMPROMISE" if p < 100 else "🟢 Quantum Safe")) for y, p in zip(years, pqc_pct, strict=False)],
     })
     st.dataframe(df_audit, use_container_width=True, hide_index=True)
 
@@ -223,12 +222,12 @@ def _render_optimization_twin():
             if max_q > 50:
                 st.warning(
                     "🔴 **>50 qubits** — Requires **multi-CPU/GPU**. "
-                    "RAM: ~{:.0f} GB.".format(2**max_q * 16 / (1024**3))
+                    f"RAM: ~{2**max_q * 16 / (1024**3):.0f} GB."
                 )
             elif max_q > 30:
                 st.info(
                     "🟡 **>30 qubits** — Slow on single CPU. "
-                    "RAM: ~{:.2f} GB.".format(2**max_q * 16 / (1024**3))
+                    f"RAM: ~{2**max_q * 16 / (1024**3):.2f} GB."
                 )
 
     config = build_config_from_sliders(
@@ -336,14 +335,14 @@ def _run_twin(config: dict, problem_type: str, solver_method: str,
             fig = go.Figure()
             fig.add_trace(go.Scatter(
                 x=times, y=costs, mode="lines+markers",
-                line=dict(color=PALETTE["primary"], width=2),
-                marker=dict(size=6), name="Classical Cost",
+                line={"color": PALETTE["primary"], "width": 2},
+                marker={"size": 6}, name="Classical Cost",
             ))
             fig.update_layout(
                 title="QUBO Cost at Optimization Steps",
                 xaxis_title="Timestep", yaxis_title="Cost",
                 plot_bgcolor=PALETTE["bg"], paper_bgcolor=PALETTE["card"],
-                font=dict(color=PALETTE["text"]), height=350,
+                font={"color": PALETTE["text"]}, height=350,
             )
             fig.update_xaxes(gridcolor=PALETTE["grid"])
             fig.update_yaxes(gridcolor=PALETTE["grid"])
@@ -355,8 +354,8 @@ def _run_twin(config: dict, problem_type: str, solver_method: str,
 
         c_res = qubo_results["classical_result"]
         q_res = qubo_results.get("quantum_result")
-        c_met = qubo_results.get("classical_metrics") or {}
-        q_met = qubo_results.get("quantum_metrics") or {}
+        qubo_results.get("classical_metrics") or {}
+        qubo_results.get("quantum_metrics") or {}
 
         kc1, kc2, kc3 = st.columns(3)
         kc1.metric("Classical Cost", f"{c_res.get('cost', 'N/A')}")
@@ -426,14 +425,14 @@ def _run_twin(config: dict, problem_type: str, solver_method: str,
                     fig.add_trace(go.Scatter(
                         x=list(range(len(history))), y=history,
                         mode="lines+markers",
-                        line=dict(color=PALETTE["primary"], width=2),
-                        marker=dict(size=4), name="Cost",
+                        line={"color": PALETTE["primary"], "width": 2},
+                        marker={"size": 4}, name="Cost",
                     ))
                     fig.update_layout(
                         title="QAOA Optimization Convergence",
                         xaxis_title="Iteration", yaxis_title="Cost",
                         plot_bgcolor=PALETTE["bg"], paper_bgcolor=PALETTE["card"],
-                        font=dict(color=PALETTE["text"]), height=300,
+                        font={"color": PALETTE["text"]}, height=300,
                     )
                     st.plotly_chart(fig, use_container_width=True)
 
@@ -449,8 +448,8 @@ def _run_twin(config: dict, problem_type: str, solver_method: str,
                         title="Top Bitstrings", xaxis_title="Bitstring",
                         yaxis_title="Count",
                         plot_bgcolor=PALETTE["bg"], paper_bgcolor=PALETTE["card"],
-                        font=dict(color=PALETTE["text"]), height=300,
-                        xaxis=dict(tickangle=45),
+                        font={"color": PALETTE["text"]}, height=300,
+                        xaxis={"tickangle": 45},
                     )
                     st.plotly_chart(fig, use_container_width=True)
 
@@ -482,7 +481,7 @@ def _coverage_heatmap(bs_positions, area_size, config):
     X, Y = np.meshgrid(x, y)
     Z = np.full_like(X, -200.0)
     bs_list = config.get("network", {}).get("base_stations", [])
-    for i, bs in enumerate(bs_positions):
+    for _i, bs in enumerate(bs_positions):
         d = np.maximum(np.sqrt((X - bs[0])**2 + (Y - bs[1])**2), 1.0)
         freq = bs_list[0].get("frequency_ghz", 3.5) if bs_list else 3.5
         tx = bs_list[0].get("tx_power_dbm", 46) if bs_list else 46
@@ -490,16 +489,16 @@ def _coverage_heatmap(bs_positions, area_size, config):
         Z = np.maximum(Z, tx - pl)
 
     fig = go.Figure(data=go.Heatmap(x=x, y=y, z=Z, colorscale="Viridis",
-                                     colorbar=dict(title="Rx (dBm)")))
+                                     colorbar={"title": "Rx (dBm)"}))
     fig.add_trace(go.Scatter(
         x=bs_positions[:, 0], y=bs_positions[:, 1], mode="markers",
-        marker=dict(size=14, color=PALETTE["danger"], symbol="triangle-up",
-                    line=dict(width=2, color="white")),
+        marker={"size": 14, "color": PALETTE["danger"], "symbol": "triangle-up",
+                    "line": {"width": 2, "color": "white"}},
         name="BS",
     ))
     fig.update_layout(
         title="Coverage Map", xaxis_title="X (m)", yaxis_title="Y (m)",
         plot_bgcolor=PALETTE["bg"], paper_bgcolor=PALETTE["card"],
-        font=dict(color=PALETTE["text"]), height=450,
+        font={"color": PALETTE["text"]}, height=450,
     )
     return fig

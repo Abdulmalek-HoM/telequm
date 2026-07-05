@@ -8,12 +8,10 @@ while respecting per-cell capacity constraints.
 
 from __future__ import annotations
 
-from typing import Tuple
-
 import numpy as np
 
-from telequm.problems.base_problem import BaseProblem
 from telequm.core.network_snapshot import UniversalNetworkSnapshot
+from telequm.problems.base_problem import BaseProblem
 
 
 class PRBAllocationProblem(BaseProblem):
@@ -36,7 +34,7 @@ class PRBAllocationProblem(BaseProblem):
         super().__init__(snapshot)
         self.penalty = penalty
 
-    def to_qubo(self) -> Tuple[np.ndarray, float, dict]:
+    def to_qubo(self) -> tuple[np.ndarray, float, dict]:
         n_ue = self.snapshot.num_users
         n_cell = self.snapshot.num_cells
         n = n_ue * n_cell

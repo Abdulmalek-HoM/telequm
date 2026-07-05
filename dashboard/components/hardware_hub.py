@@ -19,13 +19,12 @@ import streamlit as st
 
 try:
     import plotly.graph_objects as go
-    from plotly.subplots import make_subplots
+    from plotly.subplots import make_subplots  # noqa: F401
     HAS_PLOTLY = True
 except ImportError:
     HAS_PLOTLY = False
 
 from dashboard.utils.plot_helpers import PALETTE
-
 
 # ─── Hardware Database ───────────────────────────────────────────
 
@@ -154,7 +153,7 @@ def _render_quantum_hardware():
     st.markdown("""
     The transition from Noisy Intermediate-Scale Quantum (NISQ) to Fault-Tolerant Quantum Computing (FTQC) determines exactly when Shor's algorithm becomes a viable threat to telecommunications networks.
     """)
-    
+
     ftqc_data = [
         {"Year": "2026", "Phase": "NISQ Era", "Physical Qubits": "~1,000 - 3,000", "Logical Qubits": "0 - 10", "Telecom Impact": "No threat to RSA/ECC. Used for small QAOA/VQE radio resource optimization."},
         {"Year": "2028", "Phase": "Early Error Correction", "Physical Qubits": "~10,000", "Logical Qubits": "~50 - 100", "Telecom Impact": "Can simulate small molecules and complex network graphs. RSA-2048 still secure."},
@@ -224,7 +223,7 @@ def _render_pqc_telecom_hardware():
     else:
         m1.metric("Combined Latency", f"{tier['kem_encap_ms'] + tier['dsa_sign_ms']:.2f} ms")
         m2.metric("Verify + Decap", f"{tier['kem_decap_ms'] + tier['dsa_verify_ms']:.2f} ms")
-        
+
     m3.metric("Max Throughput Capacity", f"{tier['tps_capacity']:,} TPS")
     m4.metric("Memory Footprint", f"{tier['memory_kb']} KB")
 
@@ -234,10 +233,10 @@ def _render_pqc_telecom_hardware():
         tiers_names = list(tiers_data.keys())
         enc_times = [tiers_data[t]["kem_encap_ms"] for t in tiers_names]
         sig_times = [tiers_data[t]["dsa_sign_ms"] for t in tiers_names]
-        
+
         fig.add_trace(go.Bar(name="ML-KEM-768 Encap (ms)", x=tiers_names, y=enc_times, marker_color=PALETTE["primary"]))
         fig.add_trace(go.Bar(name="ML-DSA-65 Sign (ms)", x=tiers_names, y=sig_times, marker_color=PALETTE["secondary"]))
-        
+
         fig.update_layout(
             barmode="group",
             yaxis_type="log",
@@ -245,8 +244,8 @@ def _render_pqc_telecom_hardware():
             xaxis_title="Telecom Hardware Tier",
             plot_bgcolor=PALETTE["bg"],
             paper_bgcolor=PALETTE["card"],
-            font=dict(color=PALETTE["text"]),
-            legend=dict(bgcolor=PALETTE["card"]),
+            font={"color": PALETTE["text"]},
+            legend={"bgcolor": PALETTE["card"]},
             height=400,
         )
         st.plotly_chart(fig, use_container_width=True)
@@ -305,19 +304,19 @@ def _radar_chart(selected: list) -> go.Figure:
             theta=categories + [categories[0]],
             fill="toself",
             name=name,
-            line=dict(color=hw["color"], width=2),
+            line={"color": hw["color"], "width": 2},
             opacity=0.7,
         ))
 
     fig.update_layout(
-        polar=dict(
-            radialaxis=dict(visible=True, range=[0, 1],
-                            gridcolor=PALETTE["grid"]),
-            angularaxis=dict(gridcolor=PALETTE["grid"]),
-            bgcolor=PALETTE["bg"],
-        ),
+        polar={
+            "radialaxis": {"visible": True, "range": [0, 1],
+                            "gridcolor": PALETTE["grid"]},
+            "angularaxis": {"gridcolor": PALETTE["grid"]},
+            "bgcolor": PALETTE["bg"],
+        },
         paper_bgcolor=PALETTE["card"],
-        font=dict(color=PALETTE["text"]),
+        font={"color": PALETTE["text"]},
         height=450,
     )
     return fig
@@ -350,7 +349,7 @@ def _render_workload_projection(selected: list):
 
 
 def _render_recommendations():
-    st.markdown(f"""
+    st.markdown("""
     | Scenario | Recommended Backend | Reason |
     |----------|-------------------|--------|
     | **Research / prototyping** | Qiskit Aer Simulator | Fast iteration, perfect fidelity |

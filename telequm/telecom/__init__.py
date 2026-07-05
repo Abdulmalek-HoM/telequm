@@ -5,11 +5,6 @@ TELEQUM Telecom Module
 Industry-specific implementations for telecommunications applications.
 """
 
-from telequm.telecom.resource_allocation import (
-    ResourceAllocator,
-    optimize_spectrum_allocation,
-    optimize_channel_assignment,
-)
 from telequm.telecom.beamforming import (
     BeamformingOptimizer,
     compute_beam_weights,
@@ -17,8 +12,13 @@ from telequm.telecom.beamforming import (
 )
 from telequm.telecom.network_optimization import (
     NetworkOptimizer,
-    optimize_network_topology,
     optimize_load_balancing,
+    optimize_network_topology,
+)
+from telequm.telecom.resource_allocation import (
+    ResourceAllocator,
+    optimize_channel_assignment,
+    optimize_spectrum_allocation,
 )
 
 __all__ = [

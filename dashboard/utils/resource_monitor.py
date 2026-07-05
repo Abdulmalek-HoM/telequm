@@ -12,12 +12,10 @@ during solver execution. Shows real-time feedback on:
 
 from __future__ import annotations
 
-import os
 import time
 import tracemalloc
 from contextlib import contextmanager
-from dataclasses import dataclass, field
-from typing import Optional
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -253,7 +251,8 @@ def benchmark_device() -> dict:
     Returns dict with CPU, RAM, GPU info and a quick
     single-core benchmark (matrix multiply speed).
     """
-    import platform, multiprocessing
+    import multiprocessing
+    import platform
 
     try:
         import psutil

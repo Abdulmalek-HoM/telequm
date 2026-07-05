@@ -14,7 +14,6 @@ returning an ``np.ndarray`` of per-user demands (Mbps).
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Optional
 
 import numpy as np
 
@@ -31,13 +30,13 @@ class TrafficModel(ABC):
     ) -> np.ndarray:
         """
         Generate per-user traffic demand.
-        
+
         Parameters
         ----------
         rng : np.random.Generator
         num_users : int
         timestep : int
-        
+
         Returns
         -------
         np.ndarray  shape (num_users,), units Mbps
@@ -48,10 +47,10 @@ class TrafficModel(ABC):
 class PoissonTraffic(TrafficModel):
     """
     Poisson arrival traffic model.
-    
+
     Each user independently has a Poisson-distributed number
     of active sessions, each consuming ``session_rate_mbps``.
-    
+
     Parameters
     ----------
     arrival_rate : float
@@ -72,10 +71,10 @@ class PoissonTraffic(TrafficModel):
 class VideoStreamTraffic(TrafficModel):
     """
     Video streaming traffic — ON/OFF bursty model.
-    
+
     Users alternate between high-rate ON periods and
     zero-rate OFF periods, modelling adaptive bitrate streaming.
-    
+
     Parameters
     ----------
     on_rate_mbps : float
@@ -108,7 +107,7 @@ class IoTBurstTraffic(TrafficModel):
     """
     IoT burst traffic — periodic low-rate transmissions
     with occasional bursts (alarm, firmware update).
-    
+
     Parameters
     ----------
     base_rate_mbps : float
@@ -146,7 +145,7 @@ class IoTBurstTraffic(TrafficModel):
 class MixedTraffic(TrafficModel):
     """
     Mix multiple traffic models with per-user type assignment.
-    
+
     Parameters
     ----------
     models : list of (TrafficModel, float)

@@ -16,11 +16,9 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Dict, Optional
 
 import numpy as np
 
-from telequm.core.network_snapshot import UniversalNetworkSnapshot
 from telequm.problems.base_problem import BaseProblem
 
 logger = logging.getLogger("telequm.algorithms.hybrid")
@@ -62,8 +60,8 @@ class HybridSolver:
     def solve(
         self,
         problem: BaseProblem,
-        prediction: Optional[np.ndarray] = None,
-        quantum_kwargs: Optional[dict] = None,
+        prediction: np.ndarray | None = None,
+        quantum_kwargs: dict | None = None,
         classical_method: str = "greedy",
     ) -> dict:
         """
@@ -197,7 +195,7 @@ class HybridSolver:
 
 def hybrid_solve(
     problem: BaseProblem,
-    prediction: Optional[np.ndarray] = None,
+    prediction: np.ndarray | None = None,
     strategy: str = "quantum_first",
     **kwargs,
 ) -> dict:

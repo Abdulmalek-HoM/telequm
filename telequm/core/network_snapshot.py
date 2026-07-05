@@ -23,7 +23,6 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -53,11 +52,11 @@ class UserInfo:
     user_id: int
     position: np.ndarray
     velocity: np.ndarray = field(default_factory=lambda: np.zeros(2))
-    serving_cell: Optional[int] = None
+    serving_cell: int | None = None
     traffic_demand_mbps: float = 10.0
     achieved_throughput_mbps: float = 0.0
     latency_ms: float = 0.0
-    slice_id: Optional[int] = None
+    slice_id: int | None = None
     cqi: int = 15                       # channel quality indicator [0–15]
     active: bool = True
 
@@ -89,18 +88,18 @@ class UniversalNetworkSnapshot:
     >>> problem = PRBAllocationProblem(snap)
     """
 
-    def __init__(self, source: str = "standalone", metadata: Optional[dict] = None):
+    def __init__(self, source: str = "standalone", metadata: dict | None = None):
         self.source: str = source
         self.metadata: dict = metadata or {}
-        self.cells: List[CellInfo] = []
-        self.users: List[UserInfo] = []
-        self.area_size: Tuple[float, float] = (1000.0, 1000.0)
+        self.cells: list[CellInfo] = []
+        self.users: list[UserInfo] = []
+        self.area_size: tuple[float, float] = (1000.0, 1000.0)
 
         # Matrices (populated by initialize_links or external source)
-        self._channel_matrix: Optional[np.ndarray] = None   # (n_ue, n_cell) linear gain
-        self._sinr_matrix: Optional[np.ndarray] = None      # (n_ue, n_cell) dB
-        self._h_matrix: Optional[np.ndarray] = None          # MIMO channel (from MATLAB)
-        self._allocation_matrix: Optional[np.ndarray] = None # (n_ue, n_cell) PRB alloc
+        self._channel_matrix: np.ndarray | None = None   # (n_ue, n_cell) linear gain
+        self._sinr_matrix: np.ndarray | None = None      # (n_ue, n_cell) dB
+        self._h_matrix: np.ndarray | None = None          # MIMO channel (from MATLAB)
+        self._allocation_matrix: np.ndarray | None = None # (n_ue, n_cell) PRB alloc
 
         self._frozen: bool = False
 
@@ -109,12 +108,12 @@ class UniversalNetworkSnapshot:
     def add_cells(
         self,
         count: int,
-        positions: Optional[np.ndarray] = None,
+        positions: np.ndarray | None = None,
         **kwargs,
-    ) -> "UniversalNetworkSnapshot":
+    ) -> UniversalNetworkSnapshot:
         """Add cells to the snapshot."""
         self._check_mutable()
-        rng = np.random.default_rng(kwargs.get("seed", 42))
+        np.random.default_rng(kwargs.get("seed", 42))
 
         if positions is not None:
             for i in range(count):
@@ -143,12 +142,12 @@ class UniversalNetworkSnapshot:
         mobility_model: str = "static",
         seed: int = 42,
         **kwargs,
-    ) -> "UniversalNetworkSnapshot":
+    ) -> UniversalNetworkSnapshot:
         """Add randomly placed users."""
         self._check_mutable()
         rng = np.random.default_rng(seed)
 
-        for j in range(count):
+        for _j in range(count):
             pos = rng.uniform(0, self.area_size)
             demand = float(rng.uniform(kwargs.get("min_demand", 5),
                                        kwargs.get("max_demand", 30)))
@@ -160,7 +159,7 @@ class UniversalNetworkSnapshot:
         self.metadata["mobility_model"] = mobility_model
         return self
 
-    def initialize_links(self) -> "UniversalNetworkSnapshot":
+    def initialize_links(self) -> UniversalNetworkSnapshot:
         """
         Compute channel and SINR matrices from cell/user positions
         using 3GPP UMa path loss.
@@ -209,13 +208,13 @@ class UniversalNetworkSnapshot:
 
         return self
 
-    def store_channel_matrix(self, H: np.ndarray) -> "UniversalNetworkSnapshot":
+    def store_channel_matrix(self, H: np.ndarray) -> UniversalNetworkSnapshot:
         """Store a MIMO H-matrix (from MATLAB CDL/TDL)."""
         self._check_mutable()
         self._h_matrix = np.asarray(H)
         return self
 
-    def freeze(self) -> "UniversalNetworkSnapshot":
+    def freeze(self) -> UniversalNetworkSnapshot:
         """
         Freeze snapshot — no further mutation allowed.
         All downstream consumers get an immutable view.
@@ -250,11 +249,11 @@ class UniversalNetworkSnapshot:
         return self._sinr_matrix.copy()
 
     @property
-    def h_matrix(self) -> Optional[np.ndarray]:
+    def h_matrix(self) -> np.ndarray | None:
         return self._h_matrix.copy() if self._h_matrix is not None else None
 
     @property
-    def allocation_matrix(self) -> Optional[np.ndarray]:
+    def allocation_matrix(self) -> np.ndarray | None:
         return self._allocation_matrix.copy() if self._allocation_matrix is not None else None
 
     @property
@@ -298,7 +297,7 @@ class UniversalNetworkSnapshot:
     # ── Factory: from NetworkEnvironment ─────────────────────────
 
     @classmethod
-    def from_network_env(cls, env) -> "UniversalNetworkSnapshot":
+    def from_network_env(cls, env) -> UniversalNetworkSnapshot:
         """Create snapshot from a NetworkEnvironment instance."""
         snap = cls(source="standalone")
         snap.area_size = env.area_size

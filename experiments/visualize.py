@@ -9,9 +9,6 @@ using the TELEQUM colour palette.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Optional
-
-import numpy as np
 
 try:
     import matplotlib
@@ -37,12 +34,12 @@ TELEQUM_COLORS = {
 def plot_throughput_timeseries(
     metrics: list,
     title: str = "Network Throughput Over Time",
-    save_path: Optional[str] = None,
+    save_path: str | None = None,
 ) -> None:
     """Plot average and sum throughput over simulation timesteps."""
     if not HAS_MPL:
         return
-    
+
     ts = [m["timestep"] for m in metrics]
     avg = [m["avg_throughput_mbps"] for m in metrics]
     total = [m["sum_throughput_mbps"] for m in metrics]
@@ -73,7 +70,7 @@ def plot_throughput_timeseries(
 def plot_sinr_fairness(
     metrics: list,
     title: str = "SINR & Jain's Fairness",
-    save_path: Optional[str] = None,
+    save_path: str | None = None,
 ) -> None:
     """Plot SINR and fairness index over time."""
     if not HAS_MPL:
@@ -108,7 +105,7 @@ def plot_solver_comparison(
     quantum_costs: list,
     labels: tuple = ("Classical (Greedy)", "Quantum (QAOA)"),
     title: str = "Solver Cost Comparison",
-    save_path: Optional[str] = None,
+    save_path: str | None = None,
 ) -> None:
     """Bar / box plot comparing classical vs quantum costs."""
     if not HAS_MPL:
@@ -119,7 +116,7 @@ def plot_solver_comparison(
     colors = [TELEQUM_COLORS["primary"], TELEQUM_COLORS["secondary"]]
 
     bp = ax.boxplot(data, labels=labels, patch_artist=True, widths=0.5)
-    for patch, color in zip(bp["boxes"], colors):
+    for patch, color in zip(bp["boxes"], colors, strict=False):
         patch.set_facecolor(color)
         patch.set_alpha(0.7)
 

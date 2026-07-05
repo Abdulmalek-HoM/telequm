@@ -8,9 +8,9 @@ for benchmarks, experiments, and dashboard demos.
 
 from __future__ import annotations
 
-from telequm.core.network_snapshot import UniversalNetworkSnapshot
-
 import numpy as np
+
+from telequm.core.network_snapshot import UniversalNetworkSnapshot
 
 
 def generate_small_network(seed: int = 42) -> UniversalNetworkSnapshot:
@@ -43,7 +43,7 @@ def generate_medium_network(seed: int = 42) -> UniversalNetworkSnapshot:
     snap.area_size = (2000.0, 2000.0)
 
     # 19-cell hex layout (approximate)
-    rng = np.random.default_rng(seed)
+    np.random.default_rng(seed)
     isd = 500.0
     center = np.array([1000, 1000])
     positions = [center]

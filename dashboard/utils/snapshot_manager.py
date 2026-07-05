@@ -10,18 +10,16 @@ original environment (Rule #11: read-only dashboard).
 from __future__ import annotations
 
 import time
-from typing import Dict, Optional
 
 import numpy as np
 
-from telequm.simulator.network_env import NetworkEnvironment
+from telequm.core.network_snapshot import UniversalNetworkSnapshot
 from telequm.simulator.engine import SimulationEngine
+from telequm.simulator.network_env import NetworkEnvironment
 from telequm.simulator.optimization_bridge import (
     OptimizationBridge,
     ResourceAllocationQUBO,
-    ClassicalBaselines,
 )
-from telequm.core.network_snapshot import UniversalNetworkSnapshot
 
 
 def create_snapshot_env(config: dict) -> NetworkEnvironment:
@@ -177,8 +175,11 @@ def run_problem_direct(
 def _build_problem(problem_type: str, snap: UniversalNetworkSnapshot):
     """Factory for problem instances."""
     from telequm.problems import (
-        PRBAllocationProblem, RoutingOptimization,
-        BeamSelection, EnergyEfficiency, HandoverOptimization,
+        BeamSelection,
+        EnergyEfficiency,
+        HandoverOptimization,
+        PRBAllocationProblem,
+        RoutingOptimization,
     )
     # These two are newer — import with fallback for stale cache
     try:

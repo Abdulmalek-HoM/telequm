@@ -6,12 +6,11 @@ Standardized plotting functions for quantum circuits, results,
 and network topology visualizations.
 """
 
-from typing import Dict, List, Optional, Any
 import numpy as np
 
 try:
+    import matplotlib.colors as mcolors  # noqa: F401
     import matplotlib.pyplot as plt
-    import matplotlib.colors as mcolors
     MATPLOTLIB_AVAILABLE = True
 except ImportError:
     MATPLOTLIB_AVAILABLE = False
@@ -38,13 +37,13 @@ TELEQUM_COLORS = {
 def plot_circuit(
     circuit,
     output: str = "mpl",
-    style: Optional[Dict] = None,
+    style: dict | None = None,
     figsize: tuple = (12, 6),
-    title: Optional[str] = None
+    title: str | None = None
 ):
     """
     Plot a quantum circuit with TELEQUM styling.
-    
+
     Parameters
     ----------
     circuit : QuantumCircuit
@@ -57,7 +56,7 @@ def plot_circuit(
         Figure size (default: (12, 6))
     title : str, optional
         Custom title for the plot
-    
+
     Returns
     -------
     Figure or str
@@ -65,7 +64,7 @@ def plot_circuit(
     """
     if not MATPLOTLIB_AVAILABLE and output == "mpl":
         return circuit.draw("text")
-    
+
     default_style = {
         "backgroundcolor": TELEQUM_COLORS["light"],
         "linecolor": TELEQUM_COLORS["neutral"],
@@ -74,29 +73,29 @@ def plot_circuit(
         "gatefacecolor": TELEQUM_COLORS["primary"],
         "barrierfacecolor": TELEQUM_COLORS["warning"],
     }
-    
+
     if style:
         default_style.update(style)
-    
+
     fig = circuit.draw(output=output, style=default_style)
-    
+
     if output == "mpl" and title:
         fig.suptitle(title, fontsize=14, fontweight="bold", color=TELEQUM_COLORS["primary"])
-    
+
     return fig
 
 
 def plot_histogram(
-    counts: Dict[str, int],
+    counts: dict[str, int],
     title: str = "Measurement Results",
     figsize: tuple = (10, 6),
-    top_k: Optional[int] = None,
+    top_k: int | None = None,
     sort: bool = True,
     show_percentages: bool = True
 ):
     """
     Plot measurement histogram with TELEQUM styling.
-    
+
     Parameters
     ----------
     counts : Dict[str, int]
@@ -111,7 +110,7 @@ def plot_histogram(
         Sort by count descending (default: True)
     show_percentages : bool
         Show percentage labels (default: True)
-    
+
     Returns
     -------
     Figure
@@ -119,32 +118,32 @@ def plot_histogram(
     """
     if not MATPLOTLIB_AVAILABLE:
         raise ImportError("matplotlib required for histogram plotting")
-    
+
     # Process counts
     if sort:
         sorted_counts = dict(sorted(counts.items(), key=lambda x: x[1], reverse=True))
     else:
         sorted_counts = counts
-    
+
     if top_k:
         sorted_counts = dict(list(sorted_counts.items())[:top_k])
-    
+
     total = sum(counts.values())
-    
+
     # Create figure
     fig, ax = plt.subplots(figsize=figsize)
-    
+
     states = list(sorted_counts.keys())
     values = list(sorted_counts.values())
-    
+
     # Create gradient colors
     colors = [TELEQUM_COLORS["primary"]] * len(states)
-    
+
     bars = ax.bar(states, values, color=colors, edgecolor=TELEQUM_COLORS["neutral"], linewidth=1)
-    
+
     # Add percentage labels
     if show_percentages:
-        for bar, value in zip(bars, values):
+        for bar, value in zip(bars, values, strict=False):
             height = bar.get_height()
             percentage = 100 * value / total
             ax.text(
@@ -156,33 +155,33 @@ def plot_histogram(
                 fontsize=9,
                 color=TELEQUM_COLORS["neutral"]
             )
-    
+
     ax.set_xlabel("Quantum State", fontsize=12, fontweight="bold")
     ax.set_ylabel("Counts", fontsize=12, fontweight="bold")
     ax.set_title(title, fontsize=14, fontweight="bold", color=TELEQUM_COLORS["primary"])
-    
+
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
-    
+
     plt.xticks(rotation=45, ha="right")
     plt.tight_layout()
-    
+
     return fig
 
 
 def plot_network_graph(
     graph,
-    node_colors: Optional[List] = None,
-    node_labels: Optional[Dict] = None,
+    node_colors: list | None = None,
+    node_labels: dict | None = None,
     edge_weights: bool = True,
     title: str = "Network Topology",
     figsize: tuple = (10, 8),
     layout: str = "spring",
-    highlight_nodes: Optional[List] = None
+    highlight_nodes: list | None = None
 ):
     """
     Plot network graph with TELEQUM styling.
-    
+
     Parameters
     ----------
     graph : nx.Graph
@@ -201,7 +200,7 @@ def plot_network_graph(
         Layout algorithm: 'spring', 'circular', 'kamada_kawai', 'shell'
     highlight_nodes : list, optional
         Nodes to highlight with accent color
-    
+
     Returns
     -------
     Figure
@@ -209,9 +208,9 @@ def plot_network_graph(
     """
     if not MATPLOTLIB_AVAILABLE or not NETWORKX_AVAILABLE:
         raise ImportError("matplotlib and networkx required for graph plotting")
-    
+
     fig, ax = plt.subplots(figsize=figsize)
-    
+
     # Get layout
     layout_funcs = {
         "spring": nx.spring_layout,
@@ -220,18 +219,18 @@ def plot_network_graph(
         "shell": nx.shell_layout,
     }
     pos = layout_funcs.get(layout, nx.spring_layout)(graph)
-    
+
     # Node colors
     if node_colors is None:
         node_colors = [TELEQUM_COLORS["primary"]] * graph.number_of_nodes()
-    
+
     if highlight_nodes:
         node_list = list(graph.nodes())
         node_colors = [
             TELEQUM_COLORS["accent"] if node in highlight_nodes else TELEQUM_COLORS["primary"]
             for node in node_list
         ]
-    
+
     # Draw nodes
     nx.draw_networkx_nodes(
         graph, pos, ax=ax,
@@ -240,7 +239,7 @@ def plot_network_graph(
         edgecolors=TELEQUM_COLORS["neutral"],
         linewidths=2
     )
-    
+
     # Draw edges
     nx.draw_networkx_edges(
         graph, pos, ax=ax,
@@ -248,7 +247,7 @@ def plot_network_graph(
         width=2,
         alpha=0.7
     )
-    
+
     # Draw labels
     labels = node_labels if node_labels else {n: str(n) for n in graph.nodes()}
     nx.draw_networkx_labels(
@@ -258,7 +257,7 @@ def plot_network_graph(
         font_weight="bold",
         font_color="white"
     )
-    
+
     # Draw edge weights
     if edge_weights:
         edge_labels = nx.get_edge_attributes(graph, "weight")
@@ -269,10 +268,10 @@ def plot_network_graph(
                 font_size=9,
                 font_color=TELEQUM_COLORS["secondary"]
             )
-    
+
     ax.set_title(title, fontsize=14, fontweight="bold", color=TELEQUM_COLORS["primary"])
     ax.axis("off")
-    
+
     plt.tight_layout()
     return fig
 
@@ -286,7 +285,7 @@ def plot_optimization_landscape(
 ):
     """
     Plot optimization convergence or energy landscape.
-    
+
     Parameters
     ----------
     params : np.ndarray
@@ -299,7 +298,7 @@ def plot_optimization_landscape(
         Figure size
     show_minimum : bool
         Highlight the minimum point (default: True)
-    
+
     Returns
     -------
     Figure
@@ -307,9 +306,9 @@ def plot_optimization_landscape(
     """
     if not MATPLOTLIB_AVAILABLE:
         raise ImportError("matplotlib required for landscape plotting")
-    
+
     fig, ax = plt.subplots(figsize=figsize)
-    
+
     ax.plot(
         params, energies,
         color=TELEQUM_COLORS["primary"],
@@ -321,7 +320,7 @@ def plot_optimization_landscape(
         alpha=0.2,
         color=TELEQUM_COLORS["primary"]
     )
-    
+
     if show_minimum:
         min_idx = np.argmin(energies)
         ax.scatter(
@@ -337,15 +336,15 @@ def plot_optimization_landscape(
             linestyle="--",
             alpha=0.5
         )
-    
+
     ax.set_xlabel("Iteration / Parameter", fontsize=12, fontweight="bold")
     ax.set_ylabel("Energy / Cost", fontsize=12, fontweight="bold")
     ax.set_title(title, fontsize=14, fontweight="bold", color=TELEQUM_COLORS["primary"])
-    
+
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.legend(frameon=False)
     ax.grid(True, alpha=0.3)
-    
+
     plt.tight_layout()
     return fig

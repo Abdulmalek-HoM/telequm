@@ -9,9 +9,9 @@ Lightweight priority queue for scheduling simulation events
 from __future__ import annotations
 
 import heapq
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, Callable, List, Optional
 
 
 class EventType(Enum):
@@ -30,7 +30,7 @@ class EventType(Enum):
 class Event:
     """
     A single simulation event.
-    
+
     Attributes
     ----------
     time : int
@@ -46,16 +46,16 @@ class Event:
     priority: int = field(compare=True, default=0)
     event_type: EventType = field(compare=False, default=EventType.CUSTOM)
     payload: dict = field(compare=False, default_factory=dict)
-    callback: Optional[Callable] = field(compare=False, default=None, repr=False)
+    callback: Callable | None = field(compare=False, default=None, repr=False)
 
 
 class EventQueue:
     """
     Min-heap event queue for the simulation engine.
-    
+
     Events are popped in order of ``(time, priority)`` so that
     ties at the same timestep are broken deterministically.
-    
+
     Example
     -------
     >>> eq = EventQueue()
@@ -64,7 +64,7 @@ class EventQueue:
     """
 
     def __init__(self):
-        self._heap: List[Event] = []
+        self._heap: list[Event] = []
         self._counter: int = 0          # tie-break for equal (time, priority)
 
     def schedule(self, event: Event) -> None:
@@ -77,8 +77,8 @@ class EventQueue:
         start: int,
         interval: int,
         end: int,
-        payload: Optional[dict] = None,
-        callback: Optional[Callable] = None,
+        payload: dict | None = None,
+        callback: Callable | None = None,
     ) -> None:
         """
         Schedule a recurring event from *start* to *end* (inclusive)
@@ -98,7 +98,7 @@ class EventQueue:
         """Remove and return the next event."""
         return heapq.heappop(self._heap)
 
-    def peek(self) -> Optional[Event]:
+    def peek(self) -> Event | None:
         """Return next event without removing it."""
         return self._heap[0] if self._heap else None
 

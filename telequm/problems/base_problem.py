@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import time
 from abc import ABC, abstractmethod
-from typing import Dict, Optional, Tuple
 
 import numpy as np
 
@@ -37,7 +36,7 @@ class BaseProblem(ABC):
         self.snapshot = snapshot
 
     @abstractmethod
-    def to_qubo(self) -> Tuple[np.ndarray, float, dict]:
+    def to_qubo(self) -> tuple[np.ndarray, float, dict]:
         """
         Build QUBO matrix from snapshot.
 

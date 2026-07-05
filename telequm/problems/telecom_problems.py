@@ -12,12 +12,10 @@ Additional Telecom Problem Formulations
 
 from __future__ import annotations
 
-from typing import Tuple
-
 import numpy as np
 
-from telequm.problems.base_problem import BaseProblem
 from telequm.core.network_snapshot import UniversalNetworkSnapshot
+from telequm.problems.base_problem import BaseProblem
 
 
 class RoutingOptimization(BaseProblem):
@@ -31,7 +29,7 @@ class RoutingOptimization(BaseProblem):
         super().__init__(snapshot)
         self.penalty = penalty
 
-    def to_qubo(self) -> Tuple[np.ndarray, float, dict]:
+    def to_qubo(self) -> tuple[np.ndarray, float, dict]:
         n = self.snapshot.num_cells
         Q = np.zeros((n * n, n * n))
         offset = 0.0
@@ -78,7 +76,7 @@ class BeamSelection(BaseProblem):
         self.num_beams = num_beams
         self.penalty = penalty
 
-    def to_qubo(self) -> Tuple[np.ndarray, float, dict]:
+    def to_qubo(self) -> tuple[np.ndarray, float, dict]:
         n_ue = self.snapshot.num_users
         n = n_ue * self.num_beams
         Q = np.zeros((n, n))
@@ -132,7 +130,7 @@ class EnergyEfficiency(BaseProblem):
         self.penalty = penalty
         self.power_per_cell = power_per_cell_w
 
-    def to_qubo(self) -> Tuple[np.ndarray, float, dict]:
+    def to_qubo(self) -> tuple[np.ndarray, float, dict]:
         n_ue = self.snapshot.num_users
         n_cell = self.snapshot.num_cells
         n_y = n_cell
@@ -162,7 +160,7 @@ class EnergyEfficiency(BaseProblem):
 
     def decode_solution(self, x: np.ndarray, metadata: dict) -> dict:
         n_cell = metadata["num_cells"]
-        n_y = metadata["n_y"]
+        metadata["n_y"]
         active_cells = [c for c in range(n_cell) if x[c] == 1]
         return {"active_cells": active_cells, "energy_saved_pct": (1 - len(active_cells) / n_cell) * 100}
 
@@ -188,7 +186,7 @@ class HandoverOptimization(BaseProblem):
         self.penalty = penalty
         self.handover_cost = handover_cost
 
-    def to_qubo(self) -> Tuple[np.ndarray, float, dict]:
+    def to_qubo(self) -> tuple[np.ndarray, float, dict]:
         n_ue = self.snapshot.num_users
         n_cell = self.snapshot.num_cells
         n = n_ue * n_cell
@@ -252,7 +250,7 @@ class BSPlacementProblem(BaseProblem):
         # Default: can build at most ceil(K/2) sites
         self.max_sites = max_sites or max(1, (snapshot.num_cells + 1) // 2)
 
-    def to_qubo(self) -> Tuple[np.ndarray, float, dict]:
+    def to_qubo(self) -> tuple[np.ndarray, float, dict]:
         n_cell = self.snapshot.num_cells
         n_ue = self.snapshot.num_users
         # --- site selection vars: y_k for k in [0, n_cell) ---
@@ -327,13 +325,13 @@ class QuantumNetworkRouting(BaseProblem):
         self.penalty = penalty
         self.base_fidelity = base_fidelity
 
-    def to_qubo(self) -> Tuple[np.ndarray, float, dict]:
+    def to_qubo(self) -> tuple[np.ndarray, float, dict]:
         n = self.snapshot.num_cells  # nodes = repeater sites
         num_vars = n * n
         Q = np.zeros((num_vars, num_vars))
         offset = 0.0
 
-        rng = np.random.default_rng(42)
+        np.random.default_rng(42)
         # Assign per-link fidelities based on distance
         positions = self.snapshot.cell_positions  # (n, 2)
         fidelity_matrix = np.zeros((n, n))

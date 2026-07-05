@@ -29,14 +29,14 @@ __version__ = "2.1.0"
 __author__ = "Abdulmalek Baitulmal"
 __email__ = "abdulmalek@telequm.dev"
 
+from telequm.algorithms import qaoa, qml, vqe
 from telequm.core import circuits, hamiltonians, visualizations
-from telequm.algorithms import qaoa, vqe, qml
-from telequm.telecom import resource_allocation, beamforming, network_optimization
+from telequm.telecom import beamforming, network_optimization, resource_allocation
 
 __all__ = [
     # Core modules
     "circuits",
-    "hamiltonians", 
+    "hamiltonians",
     "visualizations",
     # Algorithm modules
     "qaoa",

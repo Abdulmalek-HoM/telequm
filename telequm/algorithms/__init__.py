@@ -10,15 +10,15 @@ from telequm.algorithms.qaoa import (
     create_qaoa_circuit,
     run_qaoa_optimization,
 )
-from telequm.algorithms.vqe import (
-    ResourceVQE,
-    create_vqe_circuit,
-    run_vqe_optimization,
-)
 from telequm.algorithms.qml import (
     QuantumBeamformer,
     create_qml_feature_map,
     train_quantum_classifier,
+)
+from telequm.algorithms.vqe import (
+    ResourceVQE,
+    create_vqe_circuit,
+    run_vqe_optimization,
 )
 
 __all__ = [
@@ -28,7 +28,7 @@ __all__ = [
     "run_qaoa_optimization",
     # VQE
     "ResourceVQE",
-    "create_vqe_circuit", 
+    "create_vqe_circuit",
     "run_vqe_optimization",
     # QML
     "QuantumBeamformer",

@@ -9,8 +9,6 @@ for comparison across solver methods and seeds.
 from __future__ import annotations
 
 import json
-from pathlib import Path
-from typing import Dict, List
 
 import numpy as np
 
@@ -21,10 +19,10 @@ def load_results(path: str) -> dict:
         return json.load(f)
 
 
-def compute_aggregate_metrics(metrics: List[dict]) -> dict:
+def compute_aggregate_metrics(metrics: list[dict]) -> dict:
     """
     Compute aggregate statistics from per-timestep metrics.
-    
+
     Returns
     -------
     dict  with mean, std, min, max for each numeric metric.
@@ -50,7 +48,7 @@ def compute_aggregate_metrics(metrics: List[dict]) -> dict:
 def compare_solvers(results: dict) -> dict:
     """
     Compare classical vs. quantum solver performance.
-    
+
     Returns
     -------
     dict  with per-solver cost and runtime statistics.
@@ -68,12 +66,12 @@ def compare_solvers(results: dict) -> dict:
             "mean_cost": float(np.mean(costs)) if costs else None,
             "std_cost": float(np.std(costs)) if costs else None,
             "mean_runtime_s": float(np.mean(runtimes)) if runtimes else None,
-            "methods": list(set(s.get("method", "unknown") for s in sols)),
+            "methods": list({s.get("method", "unknown") for s in sols}),
         }
     return comparison
 
 
-def convergence_series(solutions: List[dict]) -> Dict[str, list]:
+def convergence_series(solutions: list[dict]) -> dict[str, list]:
     """
     Extract timestep–cost pairs for convergence plotting.
     """

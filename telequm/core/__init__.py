@@ -13,8 +13,8 @@ from telequm.core.circuits import (
 )
 from telequm.core.hamiltonians import (
     create_max_cut_hamiltonian,
-    create_resource_allocation_hamiltonian,
     create_network_optimization_hamiltonian,
+    create_resource_allocation_hamiltonian,
 )
 from telequm.core.visualizations import (
     plot_circuit,

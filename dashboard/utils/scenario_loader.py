@@ -8,19 +8,16 @@ and interactive slider-based scenario creation.
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import numpy as np
 import yaml
-
 
 PRESETS_DIR = Path(__file__).resolve().parent.parent.parent / "experiments"
 BENCHMARKS_DIR = Path(__file__).resolve().parent.parent.parent / "benchmarks"
 
 
-def list_presets() -> List[dict]:
+def list_presets() -> list[dict]:
     """
     List available preset experiment configs.
 
@@ -70,7 +67,7 @@ def parse_uploaded_yaml(content: str) -> dict:
     try:
         config = yaml.safe_load(content)
     except yaml.YAMLError as e:
-        raise ValueError(f"Invalid YAML: {e}")
+        raise ValueError(f"Invalid YAML: {e}") from e
 
     required = ["network", "simulation"]
     missing = [k for k in required if k not in config]

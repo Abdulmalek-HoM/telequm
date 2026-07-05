@@ -17,7 +17,9 @@ jobs:
       - name: Install linter
         run: pip install ruff
       - name: Lint
-        run: ruff check telequm/ dashboard/ experiments/ benchmarks/ --ignore E501
+        run: |
+          cd notebooks
+          ruff check telequm/ dashboard/ experiments/ benchmarks/ --ignore E501
 
   test:
     runs-on: ubuntu-latest

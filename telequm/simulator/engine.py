@@ -20,15 +20,14 @@ import json
 import logging
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
 
 import numpy as np
 
-from telequm.simulator.network_env import NetworkEnvironment
-from telequm.simulator.event_queue import EventQueue, EventType, Event
-from telequm.simulator.traffic_models import TrafficModel, PoissonTraffic
+from telequm.simulator.event_queue import EventQueue
 from telequm.simulator.mobility_models import MobilityModel, PedestrianMobility
+from telequm.simulator.network_env import NetworkEnvironment
 from telequm.simulator.optimization_bridge import OptimizationBridge
+from telequm.simulator.traffic_models import PoissonTraffic, TrafficModel
 
 logger = logging.getLogger("telequm.simulator.engine")
 
@@ -36,7 +35,7 @@ logger = logging.getLogger("telequm.simulator.engine")
 class SimulationEngine:
     """
     Orchestrates a discrete-time telecom network simulation.
-    
+
     Parameters
     ----------
     config : dict
@@ -46,7 +45,7 @@ class SimulationEngine:
         - ``traffic``    : traffic model config
         - ``mobility``   : mobility model config
         - ``solver``     : optimization bridge config
-    
+
     Example
     -------
     >>> from telequm.simulator import SimulationEngine
@@ -82,14 +81,14 @@ class SimulationEngine:
         )
 
         # ── Optimization bridge (optional) ───────────────────────
-        self.bridge: Optional[OptimizationBridge] = None
+        self.bridge: OptimizationBridge | None = None
         self.solver_config: dict = config.get("solver", {})
 
         # ── Event queue ──────────────────────────────────────────
         self.event_queue = EventQueue()
 
         # ── Results ──────────────────────────────────────────────
-        self.results: Dict[str, list] = {
+        self.results: dict[str, list] = {
             "metrics": [],
             "classical_solutions": [],
             "quantum_solutions": [],
@@ -104,7 +103,7 @@ class SimulationEngine:
                 arrival_rate=cfg.get("arrival_rate", 1.0),
                 session_rate_mbps=cfg.get("session_rate_mbps", 5.0),
             )
-        from telequm.simulator.traffic_models import VideoStreamTraffic, IoTBurstTraffic
+        from telequm.simulator.traffic_models import IoTBurstTraffic, VideoStreamTraffic
         if name == "video":
             return VideoStreamTraffic(
                 on_rate_mbps=cfg.get("on_rate_mbps", 25.0),
@@ -152,7 +151,7 @@ class SimulationEngine:
     def run(self, verbose: bool = True) -> dict:
         """
         Execute the full simulation.
-        
+
         Returns
         -------
         dict

@@ -14,7 +14,6 @@ returning new ``(positions, velocities)`` arrays.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Tuple
 
 import numpy as np
 
@@ -28,12 +27,12 @@ class MobilityModel(ABC):
         rng: np.random.Generator,
         positions: np.ndarray,
         velocities: np.ndarray,
-        area_size: Tuple[float, float],
+        area_size: tuple[float, float],
         timestep: int,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """
         Compute new positions and velocities.
-        
+
         Parameters
         ----------
         rng : np.random.Generator
@@ -41,7 +40,7 @@ class MobilityModel(ABC):
         velocities : np.ndarray shape (num_users, 2)
         area_size : (width, height) in metres
         timestep : int  current simulation step
-        
+
         Returns
         -------
         (new_positions, new_velocities)  both shape (num_users, 2)
@@ -52,10 +51,10 @@ class MobilityModel(ABC):
 class RandomWaypointMobility(MobilityModel):
     """
     Random Waypoint mobility (Camp et al., 2002).
-    
+
     Users choose a random destination within the area,
     travel at a random speed, pause, then choose again.
-    
+
     Parameters
     ----------
     v_min : float   minimum speed m/s (default 0.5)
@@ -82,9 +81,9 @@ class RandomWaypointMobility(MobilityModel):
         rng: np.random.Generator,
         positions: np.ndarray,
         velocities: np.ndarray,
-        area_size: Tuple[float, float],
+        area_size: tuple[float, float],
         timestep: int,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         n = len(positions)
 
         # Initialise destinations on first call
@@ -131,10 +130,10 @@ class RandomWaypointMobility(MobilityModel):
 class VehicularMobility(MobilityModel):
     """
     Vehicular mobility — high-speed movement along roads.
-    
+
     Users move in straight lines at vehicular speed
     with occasional lane changes (direction perturbation).
-    
+
     Parameters
     ----------
     v_min : float   min speed m/s (default 8.3 ≈ 30 km/h)
@@ -160,9 +159,9 @@ class VehicularMobility(MobilityModel):
         rng: np.random.Generator,
         positions: np.ndarray,
         velocities: np.ndarray,
-        area_size: Tuple[float, float],
+        area_size: tuple[float, float],
         timestep: int,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         n = len(positions)
         new_vel = velocities.copy()
 
@@ -200,7 +199,7 @@ class VehicularMobility(MobilityModel):
 class PedestrianMobility(MobilityModel):
     """
     Pedestrian random walk with directional persistence.
-    
+
     Parameters
     ----------
     speed_mean : float  mean speed m/s (default 1.2)
@@ -227,9 +226,9 @@ class PedestrianMobility(MobilityModel):
         rng: np.random.Generator,
         positions: np.ndarray,
         velocities: np.ndarray,
-        area_size: Tuple[float, float],
+        area_size: tuple[float, float],
         timestep: int,
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         n = len(positions)
 
         if self._angles is None or len(self._angles) != n:

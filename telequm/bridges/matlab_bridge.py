@@ -20,7 +20,6 @@ to standalone 3GPP models from ``network_env.py``.
 from __future__ import annotations
 
 import logging
-from typing import Optional, Tuple
 
 import numpy as np
 
@@ -112,7 +111,7 @@ class MATLABBridge:
 
         try:
             # MATLAB script call
-            H_matlab = self._eng.eval(f"""
+            self._eng.eval(f"""
                 channel = nrCDLChannel;
                 channel.DelayProfile = '{model}';
                 channel.DelaySpread = {delay_spread};

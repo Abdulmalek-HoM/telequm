@@ -21,12 +21,11 @@ from __future__ import annotations
 
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 
 try:
-    from scipy.optimize import dual_annealing
+    import scipy.optimize  # noqa: F401
     SCIPY_AVAILABLE = True
 except ImportError:
     SCIPY_AVAILABLE = False
@@ -37,7 +36,7 @@ except ImportError:
 class QUBOProblem(ABC):
     """
     Abstract QUBO problem formulation for telecom optimization.
-    
+
     Every concrete problem must implement:
     - ``build_qubo``       : snapshot → (Q, offset, metadata)
     - ``decode_solution``  : binary vector → allocation dict
@@ -45,10 +44,10 @@ class QUBOProblem(ABC):
     """
 
     @abstractmethod
-    def build_qubo(self, snapshot: dict) -> Tuple[np.ndarray, float, dict]:
+    def build_qubo(self, snapshot: dict) -> tuple[np.ndarray, float, dict]:
         """
         Build QUBO matrix from current network snapshot.
-        
+
         Returns
         -------
         Q : np.ndarray   (n × n) upper-triangular QUBO matrix
@@ -61,12 +60,12 @@ class QUBOProblem(ABC):
     def decode_solution(self, x: np.ndarray, metadata: dict) -> dict:
         """
         Convert binary solution vector to actionable decision.
-        
+
         Parameters
         ----------
         x : np.ndarray   binary vector {0, 1}^n
         metadata : dict  from ``build_qubo``
-        
+
         Returns
         -------
         dict with human-readable allocation / scheduling
@@ -77,7 +76,7 @@ class QUBOProblem(ABC):
     def evaluate_cost(self, x: np.ndarray, Q: np.ndarray, offset: float) -> float:
         """
         Evaluate QUBO cost for a given binary vector.
-        
+
         cost = x^T Q x + offset
         """
         ...
@@ -88,15 +87,15 @@ class QUBOProblem(ABC):
 class ResourceAllocationQUBO(QUBOProblem):
     """
     QUBO formulation for user-to-BS resource allocation.
-    
+
     Binary variables: x_{u,b} = 1 if user *u* is served by BS *b*.
-    
+
     Objective
     ---------
     Maximise total SINR-weighted throughput, subject to:
     - Each user is served by exactly one BS
     - Each BS serves at most *capacity* users
-    
+
     Parameters
     ----------
     penalty : float
@@ -106,7 +105,7 @@ class ResourceAllocationQUBO(QUBOProblem):
     def __init__(self, penalty: float = 10.0):
         self.penalty = penalty
 
-    def build_qubo(self, snapshot: dict) -> Tuple[np.ndarray, float, dict]:
+    def build_qubo(self, snapshot: dict) -> tuple[np.ndarray, float, dict]:
         n_ue = snapshot["num_ue"]
         n_bs = snapshot["num_bs"]
         n = n_ue * n_bs
@@ -132,7 +131,7 @@ class ResourceAllocationQUBO(QUBOProblem):
             # (Σ x_{u,b} - 1)^2 = Σ x_i^2 + 2 Σ_{i<j} x_i x_j - 2 Σ x_i + 1
             for idx in indices:
                 Q[idx, idx] += self.penalty * (1 - 2)   # = -penalty
-                Q[idx, idx] += self.penalty              # net = -penalty + penalty = 0? 
+                Q[idx, idx] += self.penalty              # net = -penalty + penalty = 0?
             # Let me redo properly: penalty * (sum_b x_{u,b} - 1)^2
             # = penalty * (sum x_i^2) + 2 penalty * sum_{i<j} x_i x_j - 2 penalty * sum x_i + penalty
             for idx in indices:
@@ -186,12 +185,12 @@ class ResourceAllocationQUBO(QUBOProblem):
 class ClassicalBaselines:
     """
     Classical solvers for QUBO comparison (Rule #5).
-    
+
     All methods return ``(x_best, cost, runtime_s)``.
     """
 
     @staticmethod
-    def greedy(Q: np.ndarray, offset: float = 0.0) -> Tuple[np.ndarray, float, float]:
+    def greedy(Q: np.ndarray, offset: float = 0.0) -> tuple[np.ndarray, float, float]:
         """Greedy variable-by-variable QUBO solver."""
         t0 = time.time()
         n = Q.shape[0]
@@ -212,8 +211,8 @@ class ClassicalBaselines:
         Q: np.ndarray,
         offset: float = 0.0,
         num_reads: int = 100,
-        rng: Optional[np.random.Generator] = None,
-    ) -> Tuple[np.ndarray, float, float]:
+        rng: np.random.Generator | None = None,
+    ) -> tuple[np.ndarray, float, float]:
         """Simple simulated annealing for QUBO."""
         t0 = time.time()
         if rng is None:
@@ -247,7 +246,7 @@ class ClassicalBaselines:
         Q: np.ndarray,
         offset: float = 0.0,
         max_vars: int = 20,
-    ) -> Tuple[np.ndarray, float, float]:
+    ) -> tuple[np.ndarray, float, float]:
         """
         Brute-force exact QUBO solver (exponential — use only for n ≤ 20).
         """
@@ -274,13 +273,13 @@ class ClassicalBaselines:
 class OptimizationBridge:
     """
     Bridge between ``NetworkEnvironment`` and optimization solvers.
-    
+
     Workflow:
     1. Receive snapshot from engine
     2. Build QUBO via problem formulation
     3. Solve with classical baseline **and** quantum solver
     4. Return results (never mutates environment)
-    
+
     Parameters
     ----------
     problem : QUBOProblem
@@ -298,12 +297,12 @@ class OptimizationBridge:
     ) -> dict:
         """
         Solve using a classical baseline.
-        
+
         Parameters
         ----------
         snapshot : dict   from ``NetworkEnvironment.get_snapshot()``
         method : str      'greedy', 'simulated_annealing', or 'exact'
-        
+
         Returns
         -------
         dict with keys: solution, decoded, cost, runtime_s, method
@@ -339,14 +338,14 @@ class OptimizationBridge:
     ) -> dict:
         """
         Solve using a quantum algorithm.
-        
+
         Parameters
         ----------
         snapshot : dict
         algorithm : str  'qaoa' or 'vqe'
         backend : str    'qiskit' (more backends planned)
         shots : int
-        
+
         Returns
         -------
         dict with solution, decoded, cost, runtime, AND circuit info:
@@ -367,8 +366,8 @@ class OptimizationBridge:
         convergence_info = {}
 
         if algorithm == "qaoa":
+
             from telequm.algorithms.qaoa import NetworkQAOA
-            from qiskit.quantum_info import SparsePauliOp
 
             # Convert QUBO to Ising Hamiltonian
             hamiltonian = self._qubo_to_ising(Q, offset)
@@ -466,7 +465,7 @@ class OptimizationBridge:
     def _qubo_to_ising(Q: np.ndarray, offset: float):
         """
         Convert QUBO matrix to Ising Hamiltonian (SparsePauliOp).
-        
+
         Uses  x_i = (1 - Z_i) / 2  substitution.
         """
         from qiskit.quantum_info import SparsePauliOp
@@ -512,4 +511,4 @@ class OptimizationBridge:
             pauli_list.append("I" * n)
             coeffs.append(0.0)
 
-        return SparsePauliOp.from_list(list(zip(pauli_list, coeffs))).simplify()
+        return SparsePauliOp.from_list(list(zip(pauli_list, coeffs, strict=False))).simplify()

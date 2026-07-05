@@ -17,14 +17,10 @@ References
 
 from __future__ import annotations
 
-import copy
 import json
-from dataclasses import dataclass, field, asdict
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass, field
 
 import numpy as np
-
 
 # ─── Data classes ───────────────────────────────────────────────────
 
@@ -53,9 +49,9 @@ class UserEquipment:
     velocity: np.ndarray = field(default_factory=lambda: np.zeros(2))
     noise_figure_db: float = 7.0
     height_m: float = 1.5
-    serving_bs: Optional[int] = None
+    serving_bs: int | None = None
     traffic_demand_mbps: float = 10.0
-    slice_id: Optional[int] = None
+    slice_id: int | None = None
     active: bool = True
 
     def __post_init__(self):
@@ -79,21 +75,21 @@ class NetworkSlice:
 def _urban_macro_los(d_3d: float, f_ghz: float, h_bs: float, h_ue: float) -> float:
     """
     3GPP UMa LOS path loss (TR 38.901, Table 7.4.1-1).
-    
+
     Parameters
     ----------
     d_3d : float   3D distance in metres
     f_ghz : float  carrier frequency in GHz
     h_bs : float   BS height in metres
     h_ue : float   UE height in metres
-    
+
     Returns
     -------
     float  path loss in dB
     """
     d_2d = max(np.sqrt(d_3d**2 - (h_bs - h_ue)**2), 1.0)
     d_bp = 4 * (h_bs - 1) * (h_ue - 1) * f_ghz * 1e9 / 3e8
-    fc = f_ghz * 1e3  # MHz for formula
+    f_ghz * 1e3  # MHz for formula
 
     if d_2d <= d_bp:
         pl = 28.0 + 22.0 * np.log10(d_3d) + 20.0 * np.log10(f_ghz)
@@ -106,7 +102,7 @@ def _urban_macro_los(d_3d: float, f_ghz: float, h_bs: float, h_ue: float) -> flo
 def _urban_macro_nlos(d_3d: float, f_ghz: float, h_bs: float, h_ue: float) -> float:
     """3GPP UMa NLOS path loss (simplified)."""
     pl_los = _urban_macro_los(d_3d, f_ghz, h_bs, h_ue)
-    d_2d = max(np.sqrt(d_3d**2 - (h_bs - h_ue)**2), 1.0)
+    max(np.sqrt(d_3d**2 - (h_bs - h_ue)**2), 1.0)
     pl_nlos = (13.54 + 39.08 * np.log10(d_3d) + 20.0 * np.log10(f_ghz)
                - 0.6 * (h_ue - 1.5))
     return max(pl_los, pl_nlos)
@@ -117,11 +113,11 @@ def _urban_macro_nlos(d_3d: float, f_ghz: float, h_bs: float, h_ue: float) -> fl
 class NetworkEnvironment:
     """
     Centralized, mutable network state.
-    
+
     This object is the **single source of truth** during a simulation
     run.  Only ``SimulationEngine`` should call mutation methods;
     optimizers receive read-only snapshots via ``get_snapshot()``.
-    
+
     Parameters
     ----------
     config : dict
@@ -131,7 +127,7 @@ class NetworkEnvironment:
         - ``slices``        : list of slice configs (optional)
         - ``area_size``     : (width, height) in metres
         - ``random_seed``   : int
-    
+
     Attributes
     ----------
     timestep : int
@@ -149,16 +145,16 @@ class NetworkEnvironment:
     def __init__(self, config: dict):
         self._rng = np.random.default_rng(config.get("random_seed", 42))
         self.timestep: int = 0
-        self.area_size: Tuple[float, float] = tuple(config.get("area_size", (1000.0, 1000.0)))
+        self.area_size: tuple[float, float] = tuple(config.get("area_size", (1000.0, 1000.0)))
 
         # Entities
-        self.base_stations: List[BaseStation] = [
+        self.base_stations: list[BaseStation] = [
             BaseStation(**bs) for bs in config.get("base_stations", [])
         ]
-        self.users: List[UserEquipment] = [
+        self.users: list[UserEquipment] = [
             UserEquipment(**ue) for ue in config.get("users", [])
         ]
-        self.slices: List[NetworkSlice] = [
+        self.slices: list[NetworkSlice] = [
             NetworkSlice(**s) for s in config.get("slices", [])
         ]
 
@@ -169,7 +165,7 @@ class NetworkEnvironment:
         self.allocation_matrix = np.zeros((n_ue, n_bs))
 
         # Metrics history (per-timestep)
-        self.metrics_history: List[dict] = []
+        self.metrics_history: list[dict] = []
 
         # Initial channel update
         self.update_channels()
@@ -177,7 +173,7 @@ class NetworkEnvironment:
     # ── Factory helpers ────────────────────────────────────────────
 
     @classmethod
-    def from_yaml(cls, path: str) -> "NetworkEnvironment":
+    def from_yaml(cls, path: str) -> NetworkEnvironment:
         """Load environment from a YAML config file."""
         import yaml
         with open(path) as f:
@@ -185,7 +181,7 @@ class NetworkEnvironment:
         return cls(config)
 
     @classmethod
-    def from_json(cls, path: str) -> "NetworkEnvironment":
+    def from_json(cls, path: str) -> NetworkEnvironment:
         """Load environment from a JSON config file."""
         with open(path) as f:
             config = json.load(f)
@@ -196,7 +192,7 @@ class NetworkEnvironment:
     def get_snapshot(self) -> dict:
         """
         Return an immutable snapshot of current state for optimizers.
-        
+
         Returns
         -------
         dict
@@ -261,7 +257,7 @@ class NetworkEnvironment:
 
     def _compute_sinr(self) -> None:
         """Compute downlink SINR for each UE from its serving BS."""
-        n_ue = len(self.users)
+        len(self.users)
         n_bs = len(self.base_stations)
         thermal_noise_dbm = -174 + 10 * np.log10(self.base_stations[0].bandwidth_mhz * 1e6) if n_bs > 0 else -100
         noise_linear = 10 ** ((thermal_noise_dbm) / 10)
@@ -299,7 +295,7 @@ class NetworkEnvironment:
     def apply_allocation(self, allocation: np.ndarray) -> None:
         """
         Apply a resource allocation decision.
-        
+
         Parameters
         ----------
         allocation : np.ndarray
@@ -310,7 +306,7 @@ class NetworkEnvironment:
     def update_user_positions(self, new_positions: np.ndarray) -> None:
         """
         Update user positions (called by mobility model).
-        
+
         Parameters
         ----------
         new_positions : np.ndarray
@@ -322,7 +318,7 @@ class NetworkEnvironment:
     def update_user_demands(self, new_demands: np.ndarray) -> None:
         """
         Update user traffic demands (called by traffic model).
-        
+
         Parameters
         ----------
         new_demands : np.ndarray
@@ -336,7 +332,7 @@ class NetworkEnvironment:
     def collect_metrics(self) -> dict:
         """
         Compute and store per-timestep metrics.
-        
+
         Returns
         -------
         dict
