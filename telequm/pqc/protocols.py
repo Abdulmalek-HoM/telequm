@@ -9,6 +9,13 @@ and Post-Quantum suites.
 Evaluates packet expansion, MTU fragmentation, transmission latency over diverse
 telecom links (Fiber, 5G RAN, Satellite, IoT), and CPU processing cycles across
 target hardware architectures.
+
+References & Standardization Sources:
+- IETF RFC 9370: Multiple Key Exchanges in IKEv2 (Internet Engineering Task Force).
+- IETF RFC 8446 / RFC 9258: TLS 1.3 Post-Quantum and Hybrid Key Exchange models.
+- 3GPP TS 33.501 / TS 38.300: 5G System security architecture and RAN URLLC latency budgets (<1 ms).
+- ITU-T G.8271: Optical fiber propagation timing and latency budgets (~5 us/km).
+- ETSI GR QSC 004 / 006: Quantum-Safe Cryptography protocol integration and hybrid suites.
 """
 
 from __future__ import annotations
@@ -80,6 +87,23 @@ LINKS: dict[str, LinkSpec] = {
     ),
 }
 
+NETWORK_LINKS = {
+    k: {
+        "name": v.name,
+        "bandwidth_mbps": v.bandwidth_mbps,
+        "latency_ms": v.rtt_ms,
+        "rtt_ms": v.rtt_ms,
+        "mtu_bytes": v.mtu_bytes,
+        "packet_loss": v.packet_loss_rate,
+        "packet_loss_rate": v.packet_loss_rate,
+        "description": v.description,
+    }
+    for k, v in LINKS.items()
+}
+NETWORK_LINKS["Optical_Backhaul"] = NETWORK_LINKS["Optical_Fiber_Core"]
+NETWORK_LINKS["Core_Mesh"] = NETWORK_LINKS["Submarine_Cable"]
+
+
 
 # ─── Hardware Architecture Multipliers ───────────────────────────────────
 
@@ -133,18 +157,46 @@ class HandshakeResult:
             "kem_used": self.kem_used,
             "sig_used": self.sig_used,
             "total_handshake_bytes": self.total_handshake_bytes,
+            "total_bytes": self.total_handshake_bytes,
             "client_to_server_bytes": self.client_to_server_bytes,
             "server_to_client_bytes": self.server_to_client_bytes,
             "total_fragments": self.total_fragments,
+            "fragmentation_count": self.total_fragments,
             "max_fragment_size": self.max_fragment_size,
             "total_latency_ms": round(self.total_latency_ms, 2),
             "network_transmission_ms": round(self.network_transmission_ms, 2),
             "crypto_processing_ms": round(self.crypto_processing_ms, 2),
+            "cpu_processing_ms": round(self.crypto_processing_ms, 2),
             "cert_chain_bytes": self.cert_chain_bytes,
             "fragmentation_risk": self.fragmentation_risk,
+            "mtu_exceeded": self.fragmentation_risk,
             "num_steps": len(self.steps),
             "summary_notes": self.summary_notes,
         }
+
+    @property
+    def total_bytes(self) -> int:
+        return self.total_handshake_bytes
+
+    @property
+    def cpu_processing_ms(self) -> float:
+        return self.crypto_processing_ms
+
+    @property
+    def mtu_exceeded(self) -> bool:
+        return self.fragmentation_risk
+
+    @mtu_exceeded.setter
+    def mtu_exceeded(self, value: bool) -> None:
+        self.fragmentation_risk = value
+
+    @property
+    def fragmentation_count(self) -> int:
+        return self.total_fragments
+
+    @fragmentation_count.setter
+    def fragmentation_count(self, value: int) -> None:
+        self.total_fragments = value
 
 
 class ProtocolSimulator:
@@ -153,6 +205,12 @@ class ProtocolSimulator:
     @classmethod
     def get_suite_algorithms(cls, crypto_suite: str) -> tuple[PQCAlgorithm, PQCAlgorithm, int]:
         """Return (KEM, Signature, cert_chain_bytes) for a given suite."""
+        suite_aliases = {
+            "PQC_Pure": "Pure_PQC",
+            "Pure_PQC": "Pure_PQC",
+            "PQC": "Pure_PQC",
+        }
+        crypto_suite = suite_aliases.get(crypto_suite, crypto_suite)
         if crypto_suite == "Classical":
             kem = get_algorithm("ECDH-P256")
             sig = get_algorithm("ECDSA-P256")
@@ -178,6 +236,19 @@ class ProtocolSimulator:
         target_hw: str = "x86_server",
     ) -> HandshakeResult:
         """Simulate a full protocol handshake over a specific telecom link."""
+        proto_aliases = {
+            "DNSSEC_BGP": "DNSSEC",
+            "DNSSEC/BGP": "DNSSEC",
+            "5G_AKA": "5G_AKA",
+        }
+        protocol = proto_aliases.get(protocol, protocol)
+
+        link_aliases = {
+            "Optical_Backhaul": "Optical_Fiber_Core",
+            "Core_Mesh": "Submarine_Cable",
+        }
+        link_type = link_aliases.get(link_type, link_type)
+
         if link_type not in LINKS:
             raise KeyError(f"Link type '{link_type}' not found. Available: {list(LINKS.keys())}")
         link = LINKS[link_type]

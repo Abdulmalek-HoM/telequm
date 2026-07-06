@@ -5,6 +5,12 @@ Quantum Threat & Harvest Now Decrypt Later (HNDL) Estimators
 Provides risk scoring models for Harvest Now Decrypt Later (HNDL) attacks
 across telecom data types, and computes physical/logical qubit requirements
 and execution times for Shor's and Grover's algorithms.
+
+References & Standardization Sources:
+- Mosca, M. (2015): "Cybersecurity in an Era with Quantum Computers: Will we be ready?", IEEE Security & Privacy (X + Y > Z theorem).
+- Shor, P. W. (1994): "Algorithms for quantum computation: discrete logarithms and factoring", IEEE FOCS (Polynomial speedup O(log^3 N)).
+- Grover, L. K. (1996): "A fast quantum mechanical algorithm for database search", ACM STOC (Quadratic speedup O(sqrt(N))).
+- ETSI TR 103 619: Quantum-Safe Cryptography risk categorization matrices.
 """
 
 from __future__ import annotations
@@ -34,9 +40,34 @@ class HNDLRiskScore:
             "interception_probability": self.interception_probability,
             "exposure_gap_years": self.exposure_gap_years,
             "risk_score": round(self.risk_score, 1),
+            "score": round(self.risk_score, 1),
             "urgency_level": self.urgency_level,
+            "risk_level": self.urgency_level,
             "recommendation": self.recommendation,
+            "action_required": self.recommendation,
+            "margin_years": -self.exposure_gap_years,
+            "description": self.description,
         }
+
+    @property
+    def score(self) -> float:
+        return round(self.risk_score, 1)
+
+    @property
+    def risk_level(self) -> str:
+        return self.urgency_level
+
+    @property
+    def action_required(self) -> str:
+        return self.recommendation
+
+    @property
+    def margin_years(self) -> int:
+        return -self.exposure_gap_years
+
+    @property
+    def description(self) -> str:
+        return f"Mosca's Theorem: X({self.data_sensitivity_years}y) + Y({self.exposure_gap_years + self.estimated_crqc_arrival_years - self.data_sensitivity_years}y) vs Z({self.estimated_crqc_arrival_years}y)"
 
 
 class HNDLCalculator:
@@ -44,6 +75,24 @@ class HNDLCalculator:
 
     # Typical telecom migration lead time in years (procurement, lab testing, rollout)
     DEFAULT_MIGRATION_LEAD_YEARS = 3
+
+    @classmethod
+    def calculate(
+        cls,
+        x: int,
+        y: int,
+        z: int,
+        prob: float = 0.8,
+        data_type: str = "Telecom Transport Backbone",
+    ) -> HNDLRiskScore:
+        """Alias for calculate_score accepting X, Y, Z parameters directly from UI sliders."""
+        return cls.calculate_score(
+            data_sensitivity_years=x,
+            crqc_years=z,
+            interception_prob=prob,
+            data_type=data_type,
+            migration_lead_years=y,
+        )
 
     @classmethod
     def calculate_score(

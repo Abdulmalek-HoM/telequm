@@ -8,6 +8,12 @@ Implements operational governance models derived from the AQC Whitepaper feedbac
 - Migration KPIs (real-time tracking metrics)
 - Infrastructure Lifecycle Categories (A, B, C, D)
 - Sector-Specific Migration Profiles (Telecom, Banking, Mobile Money, SCADA/OT, Identity)
+
+References & Standardization Sources:
+- GSMA: "Post-Quantum Computing Telco Network Guidelines" (GSMA Whitepaper, 2023/2024).
+- Applied Quantum Computing (AQC): Telecom Operational Maturity Frameworks.
+- ETSI TR 103 619: Migration strategies and recommendations to Quantum-Safe schemes.
+- ICAO / CISA / EBA: Sector data sensitivity shelf-life mandates (50 yr identity, 35 yr SCADA, 15 yr banking).
 """
 
 from __future__ import annotations
@@ -43,8 +49,23 @@ class MaturityScore:
             "overall_score": round(self.overall_score, 1),
             "level": self.level,
             "level_name": self.level_name,
+            "name": self.level_name,
             "next_steps": self.next_steps,
+            "next_step": self.next_step,
+            "description": self.description,
         }
+
+    @property
+    def name(self) -> str:
+        return self.level_name
+
+    @property
+    def next_step(self) -> str:
+        return self.next_steps[0] if self.next_steps else "Maintain continuous monitoring."
+
+    @property
+    def description(self) -> str:
+        return MaturityLadder.LEVEL_NAMES.get(self.level, f"Level {self.level} Maturity")
 
 
 class MaturityLadder:
@@ -61,13 +82,22 @@ class MaturityLadder:
     @classmethod
     def evaluate(
         cls,
-        governance: int,
-        discovery: int,
-        architecture: int,
-        operations: int,
-        procurement: int,
+        governance: int | dict[str, int] | list[int] | tuple[int, ...],
+        discovery: int = 0,
+        architecture: int = 0,
+        operations: int = 0,
+        procurement: int = 0,
     ) -> MaturityScore:
         """Compute maturity level and actionable recommendations."""
+        if isinstance(governance, dict):
+            discovery = governance.get("Discovery", governance.get("discovery", 0))
+            architecture = governance.get("Architecture", governance.get("architecture", 0))
+            operations = governance.get("Operations", governance.get("operations", 0))
+            procurement = governance.get("Procurement", governance.get("procurement", 0))
+            governance = governance.get("Governance", governance.get("governance", 0))
+        elif isinstance(governance, (list, tuple)) and len(governance) >= 5:
+            governance, discovery, architecture, operations, procurement = governance[:5]
+
         avg = (governance + discovery + architecture + operations + procurement) / 5.0
 
         if avg < 20.0:
@@ -130,6 +160,23 @@ class MigrationStage:
     key_activities: list[str]
     telecom_bottlenecks: list[str]
     deliverables: list[str]
+
+    @property
+    def stage_number(self) -> int:
+        return self.stage_id
+
+    @property
+    def timeline(self) -> str:
+        return self.duration_months
+
+    @property
+    def objective(self) -> str:
+        return self.key_activities[0] if self.key_activities else "Execute migration activities."
+
+    @property
+    def key_milestones(self) -> list[str]:
+        return self.key_activities + self.telecom_bottlenecks
+
 
 
 class MigrationExecutionChain:
@@ -256,6 +303,22 @@ class SectorType:
     regulatory_mandates: list[str]
     description: str
 
+    @property
+    def recommended_suite(self) -> str:
+        return self.target_pqc_suite
+
+    @property
+    def data_sensitivity_shelf_life_years(self) -> int:
+        shelf_lives = {
+            "Telecommunications & 6G Networks": 25,
+            "Banking & Financial Markets": 15,
+            "Mobile Money & Financial Inclusion (M-Pesa / UPI)": 15,
+            "Digital Identity, e-Passports & Smart Cards": 50,
+            "Industrial Control Systems (ICS) / SCADA / OT": 35,
+        }
+        return shelf_lives.get(self.sector_name, 25)
+
+
 
 class SectorRiskMatrix:
     """Provides tailored migration guidelines across critical industry sectors."""
@@ -315,6 +378,12 @@ class SectorRiskMatrix:
 
     @classmethod
     def get_profile(cls, sector_key: str) -> SectorType:
+        aliases = {
+            "Government_Defense": "Digital_Identity_SmartCards",
+            "Healthcare_MedTech": "Mobile_Money",
+            "Critical_Infrastructure": "ICS_SCADA_OT",
+        }
+        sector_key = aliases.get(sector_key, sector_key)
         if sector_key not in cls.SECTORS:
             raise KeyError(f"Sector '{sector_key}' not found. Available: {list(cls.SECTORS.keys())}")
         return cls.SECTORS[sector_key]

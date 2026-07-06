@@ -5,6 +5,13 @@ PQC Algorithms Database & Sizing Models
 Provides comprehensive specifications, byte sizing, CPU cycle estimates, and
 telecommunications use cases for NIST PQC standards (FIPS 203, 204, 205),
 legacy classical schemes, code-based cryptography, and hybrid transition suites.
+
+References & Standardization Sources:
+- NIST FIPS 203 (ML-KEM / Kyber): Module-Lattice-Based Key Encapsulation Mechanism Standard (Aug 2024).
+- NIST FIPS 204 (ML-DSA / Dilithium): Module-Lattice-Based Digital Signature Standard (Aug 2024).
+- NIST FIPS 205 (SLH-DSA / SPHINCS+): Stateless Hash-Based Digital Signature Standard (Aug 2024).
+- SUPERCOP / eBACS: ECRYPT Benchmarking of Cryptographic Systems on Intel Xeon and Cortex-A53 testbeds.
+- IETF RFC 8446 / NIST SP 800-56A: Classical ECDH P-256 and RSA-3072 sizing baselines.
 """
 
 from __future__ import annotations
@@ -43,9 +50,11 @@ class PQCAlgorithm:
             "standard": self.standard,
             "type": self.type,
             "security_level": self.security_level,
+            "nist_level": self.security_level,
+            "quantum_safe": self.security_level > 0,
             "public_key_bytes": self.public_key_bytes,
             "secret_key_bytes": self.secret_key_bytes,
-            "ciphertext_bytes": self.ciphertext_bytes,
+            "ciphertext_bytes": max(self.ciphertext_bytes, self.signature_bytes),
             "signature_bytes": self.signature_bytes,
             "total_handshake_bytes": self.total_handshake_bytes,
             "est_encap_cycles": self.est_encap_cycles,

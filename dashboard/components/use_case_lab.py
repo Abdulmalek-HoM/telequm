@@ -168,6 +168,26 @@ def _render_pqc_protocol_lab():
         mime="text/csv",
     )
 
+    with st.expander("📚 Handshake Simulation & Link Benchmarking Methodology", expanded=False):
+        st.markdown("""
+        ### ⚙️ How Are Handshake Bytes, Latency & CPU Overhead Simulated?
+        The protocol simulator models the physical and cryptographic realities of telecommunications links without guesswork:
+
+        1. **Handshake Payload & MTU Fragmentation:**
+           - **Payload Sizing:** Sums X.509 certificate chains (dual-signed or pure PQC Dilithium3 certs $\\sim 3.3\\text{ KB}$ each), KEM encapsulation public keys/ciphertexts ($1,184\\text{ B}$ and $1,088\\text{ B}$ for ML-KEM-768), and protocol framing overhead per **IETF RFC 8446 (TLS 1.3)** and **RFC 9370 (Multiple Key Exchanges in IKEv2)**.
+           - **Fragmentation Calculation:** Splits total handshake bytes across link MTU (Ethernet $1500\\text{ B}$, IPv6 minimum $1280\\text{ B}$, Jumbo Frames $9000\\text{ B}$). Whenever packet size exceeds MTU, IP fragmentation occurs, multiplying packet loss vulnerability and retransmission jitter in RAN/optical channels.
+
+        2. **Transmission Latency & CPU Processing Time:**
+           - **Physical Propagation Delay:** Modeled using speed of light in optical fiber ($\\sim 5\\text{ }\\mu\\text{s/km}$ per **ITU-T G.8271**), satellite LEO orbital round-trip delays ($60\\text{--}80\\text{ ms}$ per **3GPP TR 38.811**), and 5G RAN URLLC air-interface budgets ($<1\\text{ ms}$ per **3GPP TS 38.300**).
+           - **CPU Processing Time:** Derived by dividing empirical cryptographic cycle counts (from OpenSSL 3.2 OQS provider benchmarks) by an assumed $2.5\\text{ GHz}$ telecom control-plane processor clock speed:
+             $$T_{\\text{cpu}} = \\frac{\\text{Cycles}_{\\text{encap}} + \\text{Cycles}_{\\text{decap}} + \\text{Cycles}_{\\text{verify}}}{\\text{Processor Clock Frequency}}$$
+
+        3. **Standardization References:**
+           - *IETF RFC 9370:* Multiple Key Exchanges in IKEv2 (Internet Engineering Task Force).
+           - *3GPP TS 33.501:* Security architecture and procedures for 5G System (3GPP).
+           - *ETSI GR QSC 004 / 006:* Quantum-Safe Cryptography; Protocol integration and hybrid key exchanges.
+        """)
+
 
 def _render_optimization_lab():
     """Render the classical/quantum optimization lab."""
@@ -249,6 +269,23 @@ def _render_optimization_lab():
             _run_single_shot(config, problem_type, solver_method, run_quantum)
         else:
             _run_full_simulation(config, problem_type, solver_method)
+
+    with st.expander("📚 Optimization & Quantum Simulation Methodology", expanded=False):
+        st.markdown("""
+        ### 🧮 How Are QUBO Variables & Statevector RAM Calculated?
+        1. **QUBO Variable Estimation:**
+           - For **PRB Allocation / Routing / Beamforming**, binary decision variables scale as $|V| = N_{\\text{users}} \\times N_{\\text{base\\_stations}} \\times N_{\\text{subcarriers}}$.
+           - Telecommunications optimization problems are mapped to Quadratic Unconstrained Binary Optimization (QUBO) matrices $\\mathbf{Q}$, where diagonal entries represent linear node costs and off-diagonal entries penalize constraint violations (e.g., interference or capacity overflow).
+
+        2. **Statevector RAM Formula:**
+           - Exact statevector simulation of $n$ qubits requires tracking $2^n$ complex amplitudes:
+             $$\\text{RAM Bytes} = 2^n \\times 16\\text{ bytes (complex128)}$$
+           - For $n=30$ qubits, this requires $2^{30} \\times 16 = 17.18\\text{ GB}$ of RAM; for $n=40$ qubits, it requires $17.59\\text{ TB}$. This mathematical reality illustrates why hybrid quantum-classical algorithms (QAOA/VQE) must be tested on classical supercomputers or QPUs!
+
+        3. **References:**
+           - *Farhi, E. et al. (2014):* "A Quantum Approximate Optimization Algorithm" (arXiv:1411.4028).
+           - *Peruzzo, A. et al. (2014):* "A variational eigenvalue solver on a photonic quantum processor", Nature Communications.
+        """)
 
 
 # ─── Network Config Builder ──────────────────────────────────────

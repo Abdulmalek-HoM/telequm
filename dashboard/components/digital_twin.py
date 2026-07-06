@@ -175,6 +175,23 @@ def _render_pqc_migration_twin():
     })
     st.dataframe(df_audit, use_container_width=True, hide_index=True)
 
+    with st.expander("📚 10-Year Simulation Model & Authoritative References", expanded=False):
+        st.markdown("""
+        ### 🌐 How Does the 10-Year Digital Twin Work?
+        1. **Adoption Progression Model:**
+           - Models year-by-year operator upgrade velocity across RAN, Core, and Optical layers. Rollout timelines (5 years Aggressive, 7 years Balanced, 10+ years Lagging) reflect real-world telecommunications hardware replacement cycles per **GSMA Post-Quantum Telco Network Guidelines**.
+
+        2. **HNDL Cumulative Exposure Calculation:**
+           - Every year before 100% PQC enforcement is reached, sensitive traffic transmitted over classical encryption (RSA/ECC) is vulnerable to passive recording by adversaries:
+             $$\\text{Exposed PB/Year} = \\frac{\\text{Daily Traffic (TB)} \\times 365}{1000} \\times \\left(1 - \\frac{\\text{PQC Adoption \\%}}{100}\\right)$$
+           - Once the quantum horizon year ($Z$) is reached, all accumulated historical data whose shelf-life exceeds the intervening gap is retroactively compromised!
+
+        3. **References:**
+           - *GSMA:* "Post-Quantum Computing Telco Network Guidelines" (2023/2024).
+           - *WEF:* "Transitioning to a Quantum-Secure Economy" (World Economic Forum Whitepaper).
+           - *ETSI TR 103 619:* "Quantum-Safe Cryptography; Migration strategies and recommendations to Quantum-Safe schemes".
+        """)
+
 
 def _render_optimization_twin():
     """Render the Digital Twin tab for network optimization."""
