@@ -37,6 +37,7 @@ from dashboard.utils.resource_monitor import (
     estimate_statevector_ram,
     estimate_vqe_resources,
 )
+from dashboard.utils.credibility import CREDIBILITY_CATALOG, catalog_rows, overall_score, score_by_category
 from telequm.pqc.algorithms import compare_algorithms, list_algorithms
 from telequm.pqc.migration import (
     MaturityLadder,
@@ -69,6 +70,7 @@ def render():
             "🏗️ Solver Architecture & File Map",
             "📚 Research References",
             "🖥️ Hardware Benchmark",
+            "📊 Data Credibility & Sources",
         ],
         key="edu_subtab",
     )
@@ -97,6 +99,65 @@ def render():
         _render_references()
     elif subtab == "🖥️ Hardware Benchmark":
         _render_hardware_benchmark()
+    elif subtab == "📊 Data Credibility & Sources":
+        _render_credibility_report()
+
+
+def _render_credibility_report():
+    """Render the platform-wide provenance assessment and evidence register."""
+    import json
+    import pandas as pd
+
+    score = overall_score()
+    counts = score_by_category()
+
+    st.subheader("📊 Data Credibility & Sources")
+    st.markdown(
+        "This register distinguishes measured data from model outputs, literature-backed content, "
+        "and manually maintained figures. It is deliberately conservative: a polished chart does "
+        "not receive a high score unless its provenance supports it."
+    )
+
+    c1, c2, c3, c4, c5 = st.columns(5)
+    c1.metric("Platform score", f"{score}/100")
+    c2.metric("🟢 Live", counts["live"])
+    c3.metric("🟡 Estimated", counts["estimated"])
+    c4.metric("🔵 Literature", counts["literature"])
+    c5.metric("⚪ Manual", counts["manual"])
+
+    with st.expander("How the score is calculated", expanded=True):
+        st.markdown(
+            """
+| Provenance class | Score | Meaning |
+|---|---:|---|
+| 🟢 Live | 100 | Measured at runtime with the collection method stated. |
+| 🔵 Literature | 85 | Traceable to a cited standard, paper, or curated reference. |
+| 🟡 Estimated | 65 | Deterministic model or simulation output with disclosed assumptions. |
+| ⚪ Manual | 35 | Hand-maintained figure without per-value source, timestamp, or validation record. |
+
+The platform score is an impact-weighted average across output families. It evaluates provenance and validation visibility, **not whether a model prediction is true for every real network**.
+            """
+        )
+
+    rows = catalog_rows()
+    st.subheader("Evidence register")
+    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+
+    st.download_button(
+        "⬇️ Download credibility register (JSON)",
+        data=json.dumps(rows, indent=2),
+        file_name="telequm_data_credibility_register.json",
+        mime="application/json",
+    )
+
+    st.subheader("What would raise the score")
+    st.markdown(
+        "- Add a source URL, publication/version date, and methodology to every hardware and roadmap value.\n"
+        "- Replace embedded hardware figures with timestamped provider APIs or published benchmark artifacts.\n"
+        "- Attach input assumptions, configuration hashes, and validation datasets to every simulation export.\n"
+        "- Ingest authenticated network telemetry where a Live claim is desired.\n"
+        "- Validate external JSON/YAML result files with a versioned schema and provenance manifest."
+    )
 
 
 # ═══════════════════════════════════════════════════════════════════

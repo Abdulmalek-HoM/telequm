@@ -22,6 +22,8 @@ import streamlit as st
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from dashboard.utils.credibility import overall_score, score_by_category
+
 # ─── Page Config ─────────────────────────────────────────────────
 
 st.set_page_config(
@@ -99,6 +101,18 @@ with st.sidebar:
          "🖥️ Hardware Hub", "🌐 Digital Twin"],
         key="nav_tab",
     )
+
+    st.divider()
+    credibility = overall_score()
+    source_counts = score_by_category()
+    with st.expander(f"📊 Data credibility: {credibility}/100", expanded=False):
+        st.metric("Platform credibility score", f"{credibility}/100")
+        st.caption("Impact-weighted provenance score — not a measure of scientific truth.")
+        st.caption(
+            f"🟢 Live {source_counts['live']}  ·  🟡 Estimated {source_counts['estimated']}  ·  "
+            f"🔵 Literature {source_counts['literature']}  ·  ⚪ Manual {source_counts['manual']}"
+        )
+        st.caption("Open Education Hub → Data Credibility & Sources for evidence and limitations.")
 
     st.divider()
     st.caption("© 2026 Abdulmalek Baitulmal")
