@@ -70,12 +70,48 @@ python run_benchmarks.py --category resource_allocation --seeds 5
 
 Four-tab interactive Streamlit application engineered with a sleek dark-mode aesthetic and dedicated domain switchers:
 
-| Tab | Domain Modes & Engineering Capabilities |
-| :--- | :--- |
-| 🎓 **Education Hub** | **4 Quantum Optimization Tracks**: Bloch sphere, QUBO matrix builder, 3GPP path loss explorer, algorithm deep-dives.<br>**4 PQC & Security Tracks**: Lattice Theory (LWE/SIS), HNDL Threat Matrix & Mosca Calculator, Crypto-Agility Protocol Lab, AQC 5-Pillar Migration Framework (Levels 0–4). |
-| 🧪 **Use-Case Lab** | **Network Optimization Lab**: Pick problem + solver $\to$ single-shot QUBO comparison & QAOA/VQE benchmarking.<br>**Quantum-Safe Protocol & Crypto-Agility Lab**: Simulate TLS 1.3, IPSec, MACsec, 5G AKA handshakes under Pure PQC and Hybrid suites; evaluate MTU fragmentation and latency over Fiber, 5G RAN, and LEO Satellite links. |
-| 🖥️ **Hardware Hub** | **Quantum Processing Units (QPUs)**: Compare IBM, IonQ, Quantinuum physical/logical qubit roadmaps and radar charts.<br>**FTQC Roadmap & Telecom Hardware Benchmarks**: Track Shor's RSA-2048 threshold timeline (2026–2035+) and benchmark PQC cycle counts/memory across 5G Baseband (AVX-512), IoT Edge (ARM Cortex-A53), Core HSMs, and 400G Optical DWDM line cards. |
-| 🌐 **Digital Twin** | **Live Network Optimization Twin**: Multi-timestep time-series simulation watching SINR, throughput, and fairness evolve.<br>**Quantum-Safe Migration & HNDL Risk Twin**: Simulate a 10-year operator transition timeline (2025–2035), tracking annual PQC rollout percentage, cumulative HNDL harvested data volume (TB/PB), and maturity progression. |
+### 🎓 Education Hub
+- **4 Quantum Optimization Tracks**: Bloch sphere, QUBO matrix builder, 3GPP path loss explorer, algorithm deep-dives.
+- **4 PQC & Security Tracks**: Lattice Theory (LWE/SIS), HNDL Threat Matrix & Mosca Calculator, Crypto-Agility Protocol Lab, AQC 5-Pillar Migration Framework (Levels 0–4).
+
+<p align="center">
+  <img src="Screens/V3/Education%20Hub1.png" width="48%">
+  <img src="Screens/V3/Education%20Hub2.png" width="48%">
+  <img src="Screens/V3/Education%20Hub3.png" width="48%">
+  <img src="Screens/V3/Education%20Hub4.png" width="48%">
+</p>
+
+### 🧪 Use-Case Lab
+- **Network Optimization Lab**: Pick problem + solver $\to$ single-shot QUBO comparison & QAOA/VQE benchmarking.
+- **Quantum-Safe Protocol & Crypto-Agility Lab**: Simulate TLS 1.3, IPSec, MACsec, 5G AKA handshakes under Pure PQC and Hybrid suites; evaluate MTU fragmentation and latency over Fiber, 5G RAN, and LEO Satellite links.
+
+<p align="center">
+  <img src="Screens/V3/Use%20Case%20Hub1.png" width="48%">
+  <img src="Screens/V3/Use%20Case%20Hub2.png" width="48%">
+  <img src="Screens/V3/Use%20Case%20Hub3.png" width="48%">
+  <img src="Screens/V3/Use%20Case%20Hub4.png" width="48%">
+</p>
+
+### 🖥️ Hardware Hub
+- **Quantum Processing Units (QPUs)**: Compare IBM, IonQ, Quantinuum physical/logical qubit roadmaps and radar charts.
+- **FTQC Roadmap & Telecom Hardware Benchmarks**: Track Shor's RSA-2048 threshold timeline (2026–2035+) and benchmark PQC cycle counts/memory across 5G Baseband (AVX-512), IoT Edge (ARM Cortex-A53), Core HSMs, and 400G Optical DWDM line cards.
+
+<p align="center">
+  <img src="Screens/V3/Hardware1.png" width="48%">
+  <img src="Screens/V3/Hardware2.png" width="48%">
+  <img src="Screens/V3/Hardware4.png" width="48%">
+  <img src="Screens/V3/Hardware6.png" width="48%">
+</p>
+
+### 🌐 Digital Twin
+- **Live Network Optimization Twin**: Multi-timestep time-series simulation watching SINR, throughput, and fairness evolve.
+- **Quantum-Safe Migration & HNDL Risk Twin**: Simulate a 10-year operator transition timeline (2025–2035), tracking annual PQC rollout percentage, cumulative HNDL harvested data volume (TB/PB), and maturity progression.
+
+<p align="center">
+  <img src="Screens/V3/Digital%20Twin%20Hub1.png" width="32%">
+  <img src="Screens/V3/Digital%20Twin%20Hub2.png" width="32%">
+  <img src="Screens/V3/Digital%20Twin%20Hub3.png" width="32%">
+</p>
 
 ---
 
